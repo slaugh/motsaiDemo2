@@ -30,7 +30,7 @@ import com.mygdx.game.Invaders;
 /** The main menu screen showing a background, the logo of the game and a label telling the user to touch the screen to start the
  * game. Waits for the touch and returns isDone() == true when it's done so that the ochestrating GdxInvaders class can switch to
  * the next screen.
- * @author mzechner */
+ * @author mzechner  */
 public class MainMenu extends InvadersScreen {
 	/** the SpriteBatch used to draw the background, logo and text **/
 	private final SpriteBatch spriteBatch;
