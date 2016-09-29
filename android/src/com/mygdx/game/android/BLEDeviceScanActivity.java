@@ -1,6 +1,5 @@
 package com.mygdx.game.android;
 
-
 import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
