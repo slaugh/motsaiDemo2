@@ -7,13 +7,26 @@ package com.mygdx.game.android;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.*;
 
 @DynamoDBTable(tableName = "Quaternions")
-public class Quaternions {
+
+public class Quaternions extends Object {
     private String timestamp;
     private double q1;
     private double q2;
     private double q3;
     private double q4;
 
+
+    //Default Constructor
+    Quaternions (){}
+
+//    //Complete Constructor
+    Quaternions(String timestamp, double q1, double q2, double q3, double q4){
+        this.timestamp = timestamp;
+        this.q1 = q1;
+        this.q2 = q2;
+        this.q3 = q3;
+        this.q4 = q4;
+    }
 
     @DynamoDBHashKey(attributeName = "timestamp")
     public String getTimestamp() {

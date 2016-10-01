@@ -596,6 +596,7 @@ public class BLEDeviceScanActivity extends ListActivity {
         return isAvailable;
     }
 
+    //Not being used at the moment
     private int parseJSONResponse(String jsonData)throws JSONException{
 
 //        Example JSON Parsing Code
@@ -620,7 +621,7 @@ public class BLEDeviceScanActivity extends ListActivity {
         return 0;
         }
 
-    private class getAWSID extends AsyncTask<String, Void, Void> {
+    public class getAWSID extends AsyncTask<String, Void, Void> {
 
         @Override
         protected Void doInBackground(String... params) {
@@ -660,9 +661,7 @@ public class BLEDeviceScanActivity extends ListActivity {
             }
         });
 
-
             AmazonDynamoDBClient ddbClient = new AmazonDynamoDBClient(credentialsProvider);
-
             DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
 
             Quaternions quaternions = new Quaternions();
