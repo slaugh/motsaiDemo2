@@ -14,10 +14,8 @@ import com.amazonaws.mobileconnectors.cognito.DefaultSyncCallback;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.model.BatchWriteItemRequest;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 import com.mygdx.game.Invaders;
 
 import java.util.LinkedList;
@@ -60,7 +58,7 @@ public class AndroidLauncher extends AndroidApplication {
 
 
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-		Invaders invaders = new Invaders(invaderInterface); //Why can't I call an invaderInterface here...
+		Invaders invaders = new Invaders(invaderInterface);
 		initialize(invaders, config);
 
         //Check to see if Bluetooth Adapters are enabled and available
@@ -152,7 +150,9 @@ public class AndroidLauncher extends AndroidApplication {
         }
 
             mapper.batchSave(upload_buffer);
-//            mapper.batchSave(Arrays.asList(quaternions,quaternions2));
+
+            //When the upload is confirmed then you can flush the buffer
+
             return null;
         }
     }

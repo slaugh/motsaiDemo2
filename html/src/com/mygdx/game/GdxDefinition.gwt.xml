@@ -4,7 +4,9 @@
 	<inherits name='com.badlogic.gdx.backends.gdx_backends_gwt' />
 	<inherits name='com.badlogic.gdx.physics.box2d.box2d-gwt' />
 
+
 	<inherits name='MyGdxExperiments' />
+    <inherits name="com.badlogic.gdx.controllers.controllers-gwt"/>
 	<entry-point class='com.mygdx.game.client.HtmlLauncher' />
 	
 	<set-configuration-property name="gdx.assetpath" value="../android/assets" />

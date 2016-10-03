@@ -68,3 +68,9 @@ sourceSets.main.java.srcDirs = [ "src/" ]
 eclipse.project {
     name = appName + "-html"
 }
+
+dependencies {
+    compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion:sources"
+    compile "com.badlogicgames.gdx:gdx-controllers-gwt:$gdxVersion"
+    compile "com.badlogicgames.gdx:gdx-controllers-gwt:$gdxVersion:sources"
+}
