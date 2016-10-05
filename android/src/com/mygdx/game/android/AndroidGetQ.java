@@ -1,6 +1,5 @@
 package com.mygdx.game.android;
 
-
 /**
  * Created by scott on 2016-05-11.
  */

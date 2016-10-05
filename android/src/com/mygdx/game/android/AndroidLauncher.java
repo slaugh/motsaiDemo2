@@ -25,38 +25,22 @@ public class AndroidLauncher extends AndroidApplication {
 	AndroidGetQ invaderInterface = new AndroidGetQ();
     private final static int REQUEST_ENABLE_BT = 1;
 
+
     //AWS Experiment variables
+    Thread simulateQuaternionGeneration = new Thread(new UpdateThread());
     public String identityID = "";
+    final static int buffer_iterations = 5;
+    final static int generate_every_millis = 10;
+    final static int max_buffer_size = 500;
+    List<Quaternions> upload_buffer = new LinkedList<Quaternions>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
         //TODO: Play around with AWS drivers here
-
-        //Problem: Send a constant stream of quaternions up to the cloud for machine learning processing
-
-        //Solution: 1. Temporary -> Generate data every couple milisecconds until we have accesss to the hardware
-
-        //          2. Collect quaternion data into a buffer
-        //          2.A. THERE IS A THING CALLED "BatchWriteItem" WOOHOO! THE DAY IS SAVED!!! Also BatchSave seems to work well
-        //          2.B. The idea would be to replace the auto-generated Quaternions with a Queue that flushes over time
-        //          2.C. Ideally the code checks to see if the data went through before deleting it
-
-
-            new runAWS().execute("GOGOGO!"); //Tests showed that about 960/1000 Quaternions showed up in Dynamo
-
-        //Questions: 1. What type of JAVA buffer to use? How do we queue and dequeue?
-        //              1.a. We could a simple Java Queue<float> or more likely Queue<Quaternions>
-        //              1.a.i We could use the add(), size() and poll() -> note: poll() returns null when empty (check for empty case)
-        //           2. What is the maximum size of the packets going to AWS... let's test this
-        //              2.a looks like 400 Bytes
-        //              2.b If we know the header size and the size per Quaternions set then we can estimate the buffer size.
-        //              2.c Since we are sending JSON we have 1byte per character... how many characters are we sending?
-        //              2.d
-        //           3. Could the data arrive out of order (i.e. Q1 and Q2 upadated without Q3, Q5 and timstamp, etc.), how to manage this?
-
-
+//        simulateQuaternionGeneration.start();
+        
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		Invaders invaders = new Invaders(invaderInterface);
 		initialize(invaders, config);
@@ -121,7 +105,7 @@ public class AndroidLauncher extends AndroidApplication {
                     Regions.US_EAST_1, // Region
                     credentialsProvider);
 
-// Create a record in a dataset and synchronize with the server
+        // Create a record in a dataset and synchronize with the server
             com.amazonaws.mobileconnectors.cognito.Dataset dataset = syncClient.openOrCreateDataset("myDataset");
             dataset.put("myKey", "myValue");
             dataset.synchronize(new DefaultSyncCallback() {
@@ -139,23 +123,56 @@ public class AndroidLauncher extends AndroidApplication {
             AmazonDynamoDBClient ddbClient = new AmazonDynamoDBClient(credentialsProvider);
             DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
 
-        int buffer_iterations = 1000;
-        List<Quaternions> upload_buffer = new LinkedList<Quaternions>();
+            //Here is where we flush the buffer
 
-        //          3. Fill a buffer with the maximum amount of data that can be transmitted in an AWS packet
-        for(int i = 0; i< buffer_iterations; i++){
-            double double_i = (double) i;
-            Quaternions q_i = new Quaternions("Refined 1k #" + i , double_i, double_i, double_i, double_i);
-            upload_buffer.add(q_i);
-        }
+            if(upload_buffer.size() >= max_buffer_size) {
+                List<Quaternions> to_send = upload_buffer.subList(0, max_buffer_size);
 
-            mapper.batchSave(upload_buffer);
+            //Send data to dynamoDB and collect a list of the failures
+            final List<DynamoDBMapper.FailedBatch> sent_buffer;
+            sent_buffer = mapper.batchSave(to_send); //This seems like it might block the thread for future outputs
 
-            //When the upload is confirmed then you can flush the buffer
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.w("AWS PACKET DROP", "There were " + sent_buffer.size() + " lost Quaternions");
+                    }
+                });
 
+                //flush the elements of the upload_buffer that were sent
+                for(int i = max_buffer_size ; i >= 0; i--){
+                    upload_buffer.remove(i);
+                }
+            }
             return null;
         }
     }
 
+    public class UpdateThread implements Runnable {
+
+        @Override
+        public void run() {
+            while(true)
+            {
+                try {
+                                        //          3. Fill a buffer with the maximum amount of data that can be transmitted in an AWS packet
+                    for(int i = 0; i< buffer_iterations; i++){
+                        Long tsLong = System.currentTimeMillis()/1000;
+                        String ts = tsLong.toString();
+                        double double_i = (double) i;
+                        Quaternions q_i = new Quaternions("Timestamp:" + ts + "#" + i , double_i, double_i, double_i, double_i);
+                        upload_buffer.add(q_i);
+                    }
+
+                    new runAWS().execute("GOGOGO!");
+
+                    simulateQuaternionGeneration.sleep(generate_every_millis);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
 }
+
