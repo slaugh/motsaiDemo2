@@ -19,8 +19,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -33,6 +37,8 @@ import com.amazonaws.mobileconnectors.cognito.DefaultSyncCallback;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
+import com.mygdx.game.Invaders;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.MediaType;
@@ -54,7 +60,7 @@ import java.util.Map;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class BLEDeviceScanActivity extends ListActivity {
+public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFragmentApplication.Callbacks{
 
     //List Variables
     private static final int REQUEST_ENABLE_BT = 0;
@@ -65,9 +71,11 @@ public class BLEDeviceScanActivity extends ListActivity {
     private Neblina activeDevice;
     private NebDeviceDetailFragment activeDeviceDelegate;
     private boolean mBluetoothGatt;
-    public static boolean debug_mode1 = true;
-    public static boolean debug_mode2 = true;
+    public static boolean debug_mode = true;
     public String identityID = "";
+
+    //Launch Visualization in a fragment
+    public static AndroidGetQ invaderInterface = new AndroidGetQ();
 
     //GATT CALLBACK VARIABLES
     private static final int STATE_DISCONNECTED = 0;
@@ -112,17 +120,23 @@ public class BLEDeviceScanActivity extends ListActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+
+        Log.w("PROGRAM FLOW", "IN BLE onCreate1()!");
         checkBluetoothPermissions();
-
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-//        {
-//            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
-//             }
-
+        Log.w("PROGRAM FLOW", "IN BLE onCreate2()!");
         setContentView(R.layout.ble_scan_activity);
+        Log.w("PROGRAM FLOW", "IN BLE onCreate3()!");
         ButterKnife.inject(this);
         initializeVariables();
+        Log.w("PROGRAM FLOW", "IN BLE onCreate4()!");
         scanLeDevice(true);
+
+//        GameFragment fragment = new GameFragment();
+//        FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+//        trans.replace(android.R.id.content, fragment);
+//        trans.commit();
     }
 
     public void activateBLE() {
@@ -153,7 +167,7 @@ public class BLEDeviceScanActivity extends ListActivity {
         mDeviceNameList = new ArrayList<String>();
         mLeDeviceListAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, mDeviceNameList);
-        setListAdapter(mLeDeviceListAdapter);
+//        setListAdapter(mLeDeviceListAdapter); //BRING THIS BACK
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -163,18 +177,18 @@ public class BLEDeviceScanActivity extends ListActivity {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(debug_mode1==true) {
+                    if(debug_mode ==true) {
                         Log.w("BLUETOOTH DEBUG", "ending the scan!");
                     }
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
                 }
             }, SCAN_PERIOD);
-            if(debug_mode1==true) {
+            if(debug_mode ==true) {
                 Log.w("BLUETOOTH DEBUG", "starting the scan!");
             }
             mBluetoothAdapter.startLeScan(mLeScanCallback);
         } else {
-            if(debug_mode1==true) {
+            if(debug_mode ==true) {
                 Log.w("BLUETOOTH DEBUG", "ending the scan!");
             }
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
@@ -185,7 +199,7 @@ public class BLEDeviceScanActivity extends ListActivity {
     @Override
     public void onRestart(){
         super.onRestart();
-        if(debug_mode1==true) {
+        if(debug_mode ==true) {
             Log.w("BLUETOOTH_DEBUG", "onRestart!");
         }
         if(mConnectionState==STATE_CONNECTED) {
@@ -193,28 +207,28 @@ public class BLEDeviceScanActivity extends ListActivity {
     }
 
 
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-
-        //Get the NEBLINA device and setup the NEBLINA interface
-        activeDevice = mDeviceList.get(l.getItemAtPosition(position).toString());
-        mBluetoothGatt = activeDevice.Connect(getBaseContext());
-
-        Bundle arguments = new Bundle();
-        arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
-        activeDeviceDelegate.SetItem(activeDevice);
-        activeDeviceDelegate.setArguments(arguments);
-        activeDevice.Connect(getBaseContext());
-
-
-        this.getFragmentManager().beginTransaction()
-                    .add(activeDeviceDelegate, "Fun")
-                    .commit();
-
-        //Tell the user he's connected
-        Toast.makeText(this, "Connecting to " + activeDevice.toString(), Toast.LENGTH_LONG).show();
-    }
+//    @Override
+//    protected void onListItemClick(ListView l, View v, int position, long id) {
+//        super.onListItemClick(l, v, position, id);
+//
+//        //Get the NEBLINA device and setup the NEBLINA interface
+//        activeDevice = mDeviceList.get(l.getItemAtPosition(position).toString());
+//        mBluetoothGatt = activeDevice.Connect(getBaseContext());
+//
+//        Bundle arguments = new Bundle();
+//        arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
+//        activeDeviceDelegate.SetItem(activeDevice);
+//        activeDeviceDelegate.setArguments(arguments);
+//        activeDevice.Connect(getBaseContext());
+//
+//
+//        this.getFragmentManager().beginTransaction()
+//                    .add(activeDeviceDelegate, "Fun")
+//                    .commit();
+//
+//        //Tell the user he's connected
+//        Toast.makeText(this, "Connecting to " + activeDevice.toString(), Toast.LENGTH_LONG).show();
+//    }
 
     //Callback for when a BLE device is found
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
@@ -258,7 +272,7 @@ public class BLEDeviceScanActivity extends ListActivity {
     //BROADCAST WITHOUT CHARACTERISTIC
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
-        if(debug_mode1==true) {
+        if(debug_mode ==true) {
             Log.w("BLUETOOTH DEBUG", "You are broadcasting: " + action);
         }
         sendBroadcast(intent);
@@ -282,23 +296,23 @@ public class BLEDeviceScanActivity extends ListActivity {
             final String action = intent.getAction();
             if (BLEDeviceScanActivity.ACTION_GATT_CONNECTED.equals(action)) {
                 mConnectionState = STATE_CONNECTED;
-                if(debug_mode1==true) {
+                if(debug_mode ==true) {
                     Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_GATT_CONNECTED");
                 }
                 invalidateOptionsMenu();
             } else if (BLEDeviceScanActivity.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnectionState = STATE_DISCONNECTED;
-                if(debug_mode1==true) {
+                if(debug_mode ==true) {
                     Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_GATT_DISCONNECTED");
                 }
                 invalidateOptionsMenu();
             } else if (BLEDeviceScanActivity.
                     ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                if(debug_mode1==true) {
+                if(debug_mode ==true) {
                     Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_GATT_SERVICES_DISCOVERED");
                 }
             } else if (BLEDeviceScanActivity.ACTION_DATA_AVAILABLE.equals(action)) {
-                if(debug_mode1==true) {
+                if(debug_mode ==true) {
                     Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_DATA_AVAILABLE");
                 }
             }
@@ -309,7 +323,7 @@ public class BLEDeviceScanActivity extends ListActivity {
     //THESE FUNCTIONS ARE CALLED WHEN WE CLICK A BUTTON
     @OnClick(R.id.refreshButton)
     public void onRefreshButtonClick(View view){
-        if(debug_mode1==true) {
+        if(debug_mode ==true) {
             Log.w("BLUETOOTH_DEBUG", "REFRESHING!");
         }
         scanLeDevice(false);
@@ -507,6 +521,8 @@ public class BLEDeviceScanActivity extends ListActivity {
         startActivity(intent);
     }
 
+    //TODO: Add a stream to cloud button -> maybe integrate with an
+
     //************************************ HTTP NETWORKING CODE *****************************************************//
     private void sendQuaternionsToCloudRESTfully(String q0_string, String q1_string, String q2_string, String q3_string) {
         //Example GET URL - This worked!
@@ -634,6 +650,19 @@ public class BLEDeviceScanActivity extends ListActivity {
 //            days[i] = value;
         return 0;
         }
+
+    public static class GameFragment extends AndroidFragmentApplication
+    {
+        // 5. Add the initializeForView() code in the Fragment's onCreateView method.
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+        {
+            Log.w("PROGRAM FLOW", "IN GAME FRAGMENT onCreateView()!");
+            return initializeForView(new Invaders(invaderInterface));   }
+    }
+
+    @Override
+    public void exit() {}
 
     public class getAWSID extends AsyncTask<String, Void, Void> {
 

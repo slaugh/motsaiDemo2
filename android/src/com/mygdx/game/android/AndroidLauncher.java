@@ -5,7 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -16,13 +21,14 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
 import com.mygdx.game.Invaders;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class AndroidLauncher extends AndroidApplication {
-	AndroidGetQ invaderInterface = new AndroidGetQ();
+public class AndroidLauncher extends FragmentActivity implements AndroidFragmentApplication.Callbacks {
+	public static AndroidGetQ invaderInterface = new AndroidGetQ();
     private final static int REQUEST_ENABLE_BT = 1;
 
 
@@ -34,51 +40,81 @@ public class AndroidLauncher extends AndroidApplication {
     final static int max_buffer_size = 500;
     List<Quaternions> upload_buffer = new LinkedList<Quaternions>();
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    protected void onCreate (Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        Log.w("PROGRAM FLOW", "IN AndroidLauncher onCreate!");
+        // 6. Finally, replace the AndroidLauncher activity content with the Libgdx Fragment.
+        GameFragment fragment = new GameFragment();
+        FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+        trans.replace(android.R.id.content, fragment);
+        trans.commit();
+    }
 
-        //TODO: Play around with AWS drivers here
-//        simulateQuaternionGeneration.start();
-        
-		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-		Invaders invaders = new Invaders(invaderInterface);
-		initialize(invaders, config);
+    public static class GameFragment extends AndroidFragmentApplication
+    {
+        // 5. Add the initializeForView() code in the Fragment's onCreateView method.
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+        {
+            Log.w("PROGRAM FLOW", "IN GAME FRAGMENT onCreateView()!");
+            return initializeForView(new Invaders(invaderInterface));   }
+    }
 
-        //Check to see if Bluetooth Adapters are enabled and available
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    @Override
+    public void exit() {}
 
-        //Case 1: No Bluetooth on this device
-        if (mBluetoothAdapter == null) {
-            Context context = getApplicationContext();
-            CharSequence text = "Bluetooth is not available, use a device that has bluetooth";
-            int duration = Toast.LENGTH_LONG;
 
-            Toast toast = Toast.makeText(context, text, duration);
-            toast.show();
-            // Device does not support Bluetooth
-            this.finishAffinity();
-        } else {
-            //Case 2: Bluetooth exists but is not enabled
-            if (!mBluetoothAdapter.isEnabled()) {
-                // Bluetooth is not enable :)
-                //Explain to the user that he needs to enable his bluetooth
-                Context context = getApplicationContext();
-                CharSequence text = "Bluetooth is not enabled, please activate your Bluetooth";
-                int duration = Toast.LENGTH_LONG;
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
+//	@Override
+//	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+//		super.onCreate(savedInstanceState);
+//
+//        Log.w("PROGRAM FLOW", "IN ANDROID LAUNCHER!");
+//        //TODO: Play around with AWS drivers here
+////        simulateQuaternionGeneration.start();
+//
+////		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
+////		Invaders invaders = new Invaders(invaderInterface);
+////		initializeForView(invaders, config);
+//
+//        //Check to see if Bluetooth Adapters are enabled and available
+//        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+//
+//        //Case 1: No Bluetooth on this device
+//        if (mBluetoothAdapter == null) {
+//            Context context = getContext();
+//            CharSequence text = "Bluetooth is not available, use a device that has bluetooth";
+//            int duration = Toast.LENGTH_LONG;
+//
+//            Toast toast = Toast.makeText(context, text, duration);
+//            toast.show();
+//            // Device does not support Bluetooth
+////            this.finishAffinity();
+//        } else {
+//            //Case 2: Bluetooth exists but is not enabled
+//            if (!mBluetoothAdapter.isEnabled()) {
+//                // Bluetooth is not enable :)
+//                //Explain to the user that he needs to enable his bluetooth
+//                Context context = getContext();
+//                CharSequence text = "Bluetooth is not enabled, please activate your Bluetooth";
+//                int duration = Toast.LENGTH_LONG;
+//                Toast toast = Toast.makeText(context, text, duration);
+//                toast.show();
+//
+//                //Send the user to go enable bluetooth and come back when finished
+//                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+//
+//            } else  {
+//                //Case 3: Bluetooth is enabled so start the program
+////                Intent intent = new Intent(this, BLEDeviceScanActivity.class);
+////                startActivity(intent);
+//            }
+//        }
+//	}
 
-                //Send the user to go enable bluetooth and come back when finished
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            } else  {
-                //Case 3: Bluetooth is enabled so start the program
-                Intent intent = new Intent(this, BLEDeviceScanActivity.class);
-                startActivity(intent);
-            }
-        }
-	}
+
 
     public class runAWS extends AsyncTask<String, Void, Void> {
 

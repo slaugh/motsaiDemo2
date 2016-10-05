@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -16,8 +17,8 @@
         android:layout_height="wrap_content"
         android:id="@android:id/list"
         android:layout_below="@+id/textView"
-        android:layout_above="@+id/refreshButton"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="15dp"
+        android:layout_above="@+id/fragment3" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -55,9 +56,9 @@
         android:layout_height="match_parent"
         android:layout_below="@+id/textView"
         android:layout_toEndOf="@android:id/list"
-        android:layout_above="@+id/refreshButton"
         android:layout_marginTop="15dp"
-        android:id="@+id/tableLayout">
+        android:id="@+id/tableLayout"
+        android:layout_above="@+id/fragment3">
 
         <TableRow
             android:layout_width="match_parent"
@@ -450,5 +451,14 @@
         android:layout_alignParentBottom="true"
         android:layout_alignEnd="@+id/refreshButton"
         android:layout_alignStart="@+id/refreshButton"/>
+
+    <fragment
+        android:name="com.mygdx.game.android.BLEDeviceScanActivity$GameFragment"
+        android:id="@+id/fragment3"
+        android:layout_width="wrap_content"
+        android:layout_height="300dp"
+        android:layout_above="@+id/refreshButton"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
