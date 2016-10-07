@@ -121,22 +121,11 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-
-        Log.w("PROGRAM FLOW", "IN BLE onCreate1()!");
         checkBluetoothPermissions();
-        Log.w("PROGRAM FLOW", "IN BLE onCreate2()!");
         setContentView(R.layout.ble_scan_activity);
-        Log.w("PROGRAM FLOW", "IN BLE onCreate3()!");
         ButterKnife.inject(this);
         initializeVariables();
-        Log.w("PROGRAM FLOW", "IN BLE onCreate4()!");
         scanLeDevice(true);
-
-//        GameFragment fragment = new GameFragment();
-//        FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-//        trans.replace(android.R.id.content, fragment);
-//        trans.commit();
     }
 
     public void activateBLE() {
@@ -164,10 +153,12 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private void initializeVariables() {
 
         activateBLE();
-        mDeviceNameList = new ArrayList<String>();
+        mDeviceNameList = new ArrayList<String>(); //Data Source
         mLeDeviceListAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, mDeviceNameList);
-//        setListAdapter(mLeDeviceListAdapter); //BRING THIS BACK
+                android.R.layout.simple_list_item_1, mDeviceNameList); //Our ArrayAdapter
+//        setListAdapter(mLeDeviceListAdapter); //TODO: Implement a replacement
+        //So the trick here was that ListActivity implicitely creates a ListView for you, and and the default ArrayAdapter is sufficient to adapt the list items using setListAdapter()
+        //In our case, we should extend ArrayAdapter and do this ourselves, or perhaps create our own ListView and and then use the .setAdapter()
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -207,6 +198,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     }
 
 
+    //TODO: Implement a replacement, find the correct callback placement for our custom list adaptor
 //    @Override
 //    protected void onListItemClick(ListView l, View v, int position, long id) {
 //        super.onListItemClick(l, v, position, id);
