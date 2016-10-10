@@ -65,12 +65,12 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     //List Variables
     private static final int REQUEST_ENABLE_BT = 0;
     private List<String> mDeviceNameList;
-    private ArrayAdapter<String> mLeDeviceListAdapter;
+    private CustomListAdapter mLeDeviceListAdapter;
     private static final long SCAN_PERIOD = 60000;
-    private final Map<String,Neblina> mDeviceList = new HashMap<String,Neblina>();
-    private Neblina activeDevice;
-    private NebDeviceDetailFragment activeDeviceDelegate;
-    private boolean mBluetoothGatt;
+    private static Map<String,Neblina> mDeviceList = new HashMap<String,Neblina>();
+    private static Neblina activeDevice;
+    private static NebDeviceDetailFragment activeDeviceDelegate;
+    private static boolean mBluetoothGatt;
     public static boolean debug_mode = true;
     public String identityID = "";
 
@@ -121,11 +121,77 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        //Main initialization code
         checkBluetoothPermissions();
         setContentView(R.layout.ble_scan_activity);
         ButterKnife.inject(this);
         initializeVariables();
         scanLeDevice(true);
+    }
+
+    private void checkBluetoothPermissions(){
+
+        //        //Check to see if Bluetooth Adapters are enabled and available
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        //Case 1: No Bluetooth on this device
+        if(mBluetoothAdapter==null)
+        {
+            Context context = getApplicationContext();
+            CharSequence text = "Bluetooth is not available, use a device that has bluetooth";
+            int duration = Toast.LENGTH_LONG;
+
+            Toast toast = Toast.makeText(context, text, duration);
+            toast.show();
+        } else{
+            //Case 2: Bluetooth exists but is not enabled
+            if (!mBluetoothAdapter.isEnabled()) {
+                // Bluetooth is not enable :)
+                //Explain to the user that he needs to enable his bluetooth
+                Context context = getApplicationContext();
+                CharSequence text = "Bluetooth is not enabled, please activate your Bluetooth";
+                int duration = Toast.LENGTH_LONG;
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+
+                //Send the user to go enable bluetooth and come back when finished
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+
+            } else {
+                //Case 3: Bluetooth is enabled so start the program
+            }
+        }
+
+        //For newer versions you need to get permission from the user to access location information
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("This app neds location access");
+                builder.setMessage("Please gran location access");
+                builder.setPositiveButton(android.R.string.ok,null);
+                builder.setOnDismissListener(new DialogInterface.OnDismissListener(){
+
+                    @RequiresApi(api = Build.VERSION_CODES.M)
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},PERMISSION_REQUEST_COARSE_LOCATION);
+                    }
+                });
+                builder.show();
+            }
+            return;
+        }
+    }
+
+
+    private void initializeVariables() {
+
+        activateBLE();
+        ListView yourListView = (ListView) findViewById(android.R.id.list);
+        mDeviceNameList = new ArrayList<String>(); //Data Source
+        mLeDeviceListAdapter = new CustomListAdapter(this, getApplicationContext(),mDeviceNameList);
+        yourListView.setAdapter(mLeDeviceListAdapter);
     }
 
     public void activateBLE() {
@@ -148,17 +214,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
-    }
-
-    private void initializeVariables() {
-
-        activateBLE();
-        mDeviceNameList = new ArrayList<String>(); //Data Source
-        mLeDeviceListAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, mDeviceNameList); //Our ArrayAdapter
-//        setListAdapter(mLeDeviceListAdapter); //TODO: Implement a replacement
-        //So the trick here was that ListActivity implicitely creates a ListView for you, and and the default ArrayAdapter is sufficient to adapt the list items using setListAdapter()
-        //In our case, we should extend ArrayAdapter and do this ourselves, or perhaps create our own ListView and and then use the .setAdapter()
     }
 
     private void scanLeDevice(final boolean enable) {
@@ -199,28 +254,27 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
 
     //TODO: Implement a replacement, find the correct callback placement for our custom list adaptor
-//    @Override
-//    protected void onListItemClick(ListView l, View v, int position, long id) {
-//        super.onListItemClick(l, v, position, id);
-//
-//        //Get the NEBLINA device and setup the NEBLINA interface
-//        activeDevice = mDeviceList.get(l.getItemAtPosition(position).toString());
-//        mBluetoothGatt = activeDevice.Connect(getBaseContext());
-//
-//        Bundle arguments = new Bundle();
-//        arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
-//        activeDeviceDelegate.SetItem(activeDevice);
-//        activeDeviceDelegate.setArguments(arguments);
-//        activeDevice.Connect(getBaseContext());
-//
-//
-//        this.getFragmentManager().beginTransaction()
-//                    .add(activeDeviceDelegate, "Fun")
-//                    .commit();
-//
-//        //Tell the user he's connected
-//        Toast.makeText(this, "Connecting to " + activeDevice.toString(), Toast.LENGTH_LONG).show();
-//    }
+
+    public void onListItemClick(String deviceKey) {
+
+        //Get the NEBLINA device and setup the NEBLINA interface
+        activeDevice = mDeviceList.get(deviceKey);
+        mBluetoothGatt = activeDevice.Connect(getBaseContext());
+
+        Bundle arguments = new Bundle();
+        arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
+        activeDeviceDelegate.SetItem(activeDevice);
+        activeDeviceDelegate.setArguments(arguments);
+        activeDevice.Connect(getBaseContext());
+
+//TODO: Remove re-creation of the game???
+        this.getFragmentManager().beginTransaction()
+                    .add(activeDeviceDelegate, "Fun")
+                    .commit();
+
+        //Tell the user he's connected
+        Toast.makeText(this, "Connecting to " + activeDevice.toString(), Toast.LENGTH_LONG).show();
+    }
 
     //Callback for when a BLE device is found
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
@@ -727,26 +781,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         }
     }
 
-    private void checkBluetoothPermissions(){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if(this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("This app neds location access");
-                builder.setMessage("Please gran location access");
-                builder.setPositiveButton(android.R.string.ok,null);
-                builder.setOnDismissListener(new DialogInterface.OnDismissListener(){
-
-                    @RequiresApi(api = Build.VERSION_CODES.M)
-                    @Override
-                    public void onDismiss(DialogInterface dialog) {
-                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},PERMISSION_REQUEST_COARSE_LOCATION);
-                    }
-                });
-                builder.show();
-            }
-            return;
-        }
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,

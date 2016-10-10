@@ -28,7 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class AndroidLauncher extends FragmentActivity implements AndroidFragmentApplication.Callbacks {
-	public static AndroidGetQ invaderInterface = new AndroidGetQ();
+    public static AndroidGetQ invaderInterface = new AndroidGetQ();
     private final static int REQUEST_ENABLE_BT = 1;
 
 
@@ -41,8 +41,7 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
     List<Quaternions> upload_buffer = new LinkedList<Quaternions>();
 
     @Override
-    protected void onCreate (Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.w("PROGRAM FLOW", "IN AndroidLauncher onCreate!");
         // 6. Finally, replace the AndroidLauncher activity content with the Libgdx Fragment.
@@ -52,21 +51,21 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
         trans.commit();
     }
 
-    public static class GameFragment extends AndroidFragmentApplication
-    {
+    public static class GameFragment extends AndroidFragmentApplication {
         // 5. Add the initializeForView() code in the Fragment's onCreateView method.
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
-        {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             Log.w("PROGRAM FLOW", "IN GAME FRAGMENT onCreateView()!");
-            return initializeForView(new Invaders(invaderInterface));   }
+            return initializeForView(new Invaders(invaderInterface));
+        }
     }
 
     @Override
-    public void exit() {}
+    public void exit() {
+    }
 
 
-//	@Override
+    //	@Override
 //	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 //		super.onCreate(savedInstanceState);
 //
@@ -78,41 +77,8 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
 ////		Invaders invaders = new Invaders(invaderInterface);
 ////		initializeForView(invaders, config);
 //
-//        //Check to see if Bluetooth Adapters are enabled and available
-//        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-//
-//        //Case 1: No Bluetooth on this device
-//        if (mBluetoothAdapter == null) {
-//            Context context = getContext();
-//            CharSequence text = "Bluetooth is not available, use a device that has bluetooth";
-//            int duration = Toast.LENGTH_LONG;
-//
-//            Toast toast = Toast.makeText(context, text, duration);
-//            toast.show();
-//            // Device does not support Bluetooth
-////            this.finishAffinity();
-//        } else {
-//            //Case 2: Bluetooth exists but is not enabled
-//            if (!mBluetoothAdapter.isEnabled()) {
-//                // Bluetooth is not enable :)
-//                //Explain to the user that he needs to enable his bluetooth
-//                Context context = getContext();
-//                CharSequence text = "Bluetooth is not enabled, please activate your Bluetooth";
-//                int duration = Toast.LENGTH_LONG;
-//                Toast toast = Toast.makeText(context, text, duration);
-//                toast.show();
-//
-//                //Send the user to go enable bluetooth and come back when finished
-//                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-//
-//            } else  {
-//                //Case 3: Bluetooth is enabled so start the program
-////                Intent intent = new Intent(this, BLEDeviceScanActivity.class);
-////                startActivity(intent);
-//            }
-//        }
-//	}
+
+//}
 
 
 
