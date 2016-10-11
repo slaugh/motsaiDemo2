@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
+
 public class GattBroadcastReceiver extends BroadcastReceiver {
     public GattBroadcastReceiver() {
     }

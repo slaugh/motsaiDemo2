@@ -11,23 +11,67 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.CompoundButton;
+import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
-import com.mygdx.game.android.BLEDeviceScanActivity;
-import com.mygdx.game.android.NeblinaClasses.Neblina;
-import com.mygdx.game.android.NeblinaDelegate;
+import com.mygdx.game.android.Adapters.NebCmdItem;
+import com.mygdx.game.android.Adapters.NebListAdapter;
+import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
 import com.mygdx.game.android.R;
 
 import java.util.Arrays;
 
+import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_DUMP_DATA;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_GET_DATAPORT;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_GET_FW_VERSION;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_MOTENGINE_RECORDER_STATUS;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_SET_DATAPORT;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_SET_INTERFACE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.EEPROM_CMD_READ;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.EEPROM_CMD_WRITE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_MAG_DATA;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_QUATERNION;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_DEBUG;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_EEPROM;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_MOTION_ENG;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_STORAGE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.STORAGE_CMD_PLAY;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.STORAGE_CMD_RECORD;
+
 public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate {
 
-     //The fragment argument representing the item ID that this fragment represents.
+    /**
+     * The fragment argument representing the item ID that this fragment
+     * represents.
+     */
     public static final String ARG_ITEM_ID = "item_id";
+    public static final NebCmdItem[] cmdList = new NebCmdItem[] {
+            new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "BLE Data Port", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "UART Data Port", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_SET_FUSION_TYPE, "Fusion 9 axis", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION, "Quaternion Stream", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MAG_DATA, "Mag Stream", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_LOCK_HEADING_REF, "Lock Heading Ref.", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, Neblina.STORAGE_CMD_ERASE, "Flash Erase All", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD, "Flash Record", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY, "Flash Playback", 1, ""),
+            new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_LED, Neblina.LED_CMD_SET_VALUE, "Set LED0 level", 3, ""),
+            new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_LED, Neblina.LED_CMD_SET_VALUE, "Set LED1 level", 3, ""),
+            new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_LED, Neblina.LED_CMD_SET_VALUE, "Set LED2", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_EEPROM, EEPROM_CMD_READ, "EEPROM Read", 2, "Read"),
+            new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_POWERMGMT, Neblina.POWERMGMT_CMD_SET_CHARGE_CURRENT, "Charge Current in mA", 3, ""),
+            new NebCmdItem((byte)0xf, (byte)0, "Motion data stream", 1, ""),
+            new NebCmdItem((byte)0xf, (byte)1, "Heading", 1, "")
+    };
 
     //The dummy content this fragment is presenting.
-    private Neblina mItem;
+    public Neblina mNebDev;
+    private TextView mTextLabel1;
+    private TextView mTextLabel2;
+    private ListView mCmdListView;
 
     //Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes)
     public static float latest_Q0 = 0.0f;
@@ -50,9 +94,9 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     public void SetItem(Neblina item) {
 
-        mItem = item;
-        mItem.SetDelegate(this);
-//        mItem.Connect(getActivity());
+        mNebDev = item;
+        mNebDev.SetDelegate(this);
+//        mNebDev.Connect(getActivity());
     }
 
     @Override
@@ -62,41 +106,118 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
-            mItem = (Neblina) getArguments().getParcelable(ARG_ITEM_ID);
-            mItem.SetDelegate(this);
+            mNebDev = (Neblina) getArguments().getParcelable(ARG_ITEM_ID);
+            mNebDev.SetDelegate(this);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.w("FRAGMENT DEBUG", "onCreate for NebDeviceDetailFragment is called!");
-        View rootView = null;//Not sure why we need root view
-//        rootView = inflater.inflate(R.layout.ble_scan_activity, container, false);
+
+        View rootView = inflater.inflate(R.layout.nebdevice_detail, container, false);
+
+        if (mNebDev != null) {
+            mTextLabel1 = (TextView) rootView.findViewById(R.id.textView1);
+            mTextLabel2 = (TextView) rootView.findViewById(R.id.textView2);
+            mCmdListView = (ListView) rootView.findViewById(R.id.listView);
+            NebListAdapter adapter = new NebListAdapter(getActivity().getApplicationContext(),
+                    R.layout.nebcmd_item, cmdList);
+
+            mCmdListView.setAdapter(adapter);
+            mCmdListView.setTag(this);
+            mCmdListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+                        mNebDev.getMotionStatus();
+                        mNebDev.getDataPortState();
+                        mNebDev.getLed();
+                        mNebDev.getFirmwareVersion();
+                    }
+                }
+
+                @Override
+                public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+
+                }
+            });
+        }
+
         q1_text = (TextView)getActivity().findViewById(R.id.Q1_TEXT);
         q2_text = (TextView)getActivity().findViewById(R.id.Q2_TEXT);
         q3_text = (TextView)getActivity().findViewById(R.id.Q3_TEXT);
         q4_text = (TextView)getActivity().findViewById(R.id.Q4_TEXT);
-
         q1_text.setText("Hello Earthling!");
+
         return rootView;
+    }
+
+    public void onSwitchButtonChanged(CompoundButton button, boolean isChecked) {
+        int idx = (int) button.getTag();
+        if (idx < 0 && idx > cmdList.length)
+            return;
+
+        switch (cmdList[idx].mSubSysId) {
+            case NEB_CTRL_SUBSYS_DEBUG:
+                switch (cmdList[idx].mCmdId)
+                {
+                    case DEBUG_CMD_SET_INTERFACE:
+                        //mNedDev.setInterface(isChecked == true ? 1);
+                        break;
+                    case DEBUG_CMD_DUMP_DATA:
+                        break;
+                    case DEBUG_CMD_SET_DATAPORT:
+                        if (isChecked)
+                            mNebDev.setDataPort(idx, (byte) 1);
+                        else
+                            mNebDev.setDataPort(idx, (byte) 0);
+                        break;
+                    default:
+                        break;
+                }
+                break;
+
+            case NEB_CTRL_SUBSYS_MOTION_ENG:
+                switch (cmdList[idx].mCmdId) {
+                    case MOTION_CMD_QUATERNION:
+                        mNebDev.streamQuaternion(isChecked);
+                }
+                break;
+        }
+    }
+
+    public void onButtonClick(View button) {
+        int idx = (int) button.getTag();
+        if (idx < 0 && idx > cmdList.length)
+            return;
+        switch (cmdList[idx].mSubSysId) {
+            case NEB_CTRL_SUBSYS_EEPROM:
+                switch (cmdList[idx].mCmdId) {
+                    case EEPROM_CMD_READ:
+                        mNebDev.eepromRead(0);
+                        break;
+                    case EEPROM_CMD_WRITE:
+                        break;
+                }
+                break;
+        }
+    }
+
+    public int getCmdIdx(int subsysId, int cmdId) {
+        for (int i = 0; i < cmdList.length; i++) {
+            if (cmdList[i].mSubSysId == subsysId && cmdList[i].mCmdId == cmdId) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 
     public void initializeNeblina() {
         //By default start streaming quaternions
-        mItem.streamQuaternion(true);
+        mNebDev.streamQuaternion(true);
         BLEDeviceScanActivity.is_QUATERNION_BUTTON_on = true;
-
-        //Set the quaternion button to on so the user can see that quaternions are streaming
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Log.w("BLUETOOTH_DEBUG", "Setting the button checked!");
-              ToggleButton toggleButton = (ToggleButton)getActivity().findViewById(R.id.QUATERNION_BUTTON);
-                toggleButton.setChecked(true);
-            }
-        });
     }
 
     public void didReceiveRSSI(int rssi) {
@@ -105,8 +226,16 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     public void didReceiveFusionData(int type , byte[] data, boolean errFlag) {
         switch (type) {
-            case Neblina.MOTION_CMD_QUATERNION:
+            case MOTION_CMD_QUATERNION:
 
+                //Merge Note A. Neblina Code
+                String s = String.format("%d, %d, %d", data[4], data[6], data[8]);
+                Log.w("BLUETOOTH DEBUG", s);
+                mTextLabel1.setText(s);
+                mTextLabel1.getRootView().postInvalidate();
+
+
+                //Merge Note B. Original Code
                 //Puts the characteristic values into the intent
                 if (data != null && data.length > 0) {
                     final StringBuilder stringBuilder = new StringBuilder(data.length);
@@ -184,4 +313,130 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             return normalized;
         }else return -1;
     }
+
+
+    public void didConnectNeblina() {
+        mNebDev.getMotionStatus();
+        mNebDev.getDataPortState();
+        mNebDev.getLed();
+        mNebDev.getFirmwareVersion();
+    }
+
+
+    public void didReceiveDebugData(int type, byte[] data, int dataLen, boolean errFlag) {
+        NebListAdapter adapter = (NebListAdapter) mCmdListView.getAdapter();
+
+        switch (type) {
+            case DEBUG_CMD_MOTENGINE_RECORDER_STATUS:
+            {
+                switch (data[8]) {
+                    case 1:    // Playback
+                    {
+                        int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
+                        Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v != null) {
+                            v.setChecked(false);
+                            v.getRootView().postInvalidate();
+                        }
+                        i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY);
+                        v = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v != null) {
+                            v.setChecked(true);
+                            v.getRootView().postInvalidate();
+                        }
+                    }
+                    break;
+                    case 2:    // Recording
+                    {
+                        int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY);
+                        Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v != null) {
+                            v.setChecked(false);
+                            v.getRootView().postInvalidate();
+                        }
+                        i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
+                        v = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v != null) {
+                            v.setChecked(true);
+                            v.getRootView().postInvalidate();
+                        }
+                    }
+                    break;
+                    default: {
+                        int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
+                        Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v != null) {
+                            v.setChecked(false);
+                            v.getRootView().postInvalidate();
+                        }
+                        i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY);
+                        v = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v != null) {
+                            v.setChecked(false);
+                            v.getRootView().postInvalidate();
+                        }
+                    }
+                    break;
+                }
+                int i = getCmdIdx(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION);
+                Switch v = (Switch) mCmdListView.findViewWithTag(i);
+
+                if (v != null) {
+                    v.setChecked(((data[4] & 8) >> 3) != 0);
+                    v.getRootView().postInvalidate();
+                }
+                i = getCmdIdx(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MAG_DATA);
+                v = (Switch) mCmdListView.findViewWithTag(i);
+                if (v != null) {
+                    v.setChecked(((data[4] & 0x80) >> 7) != 0);
+                    v.getRootView().postInvalidate();
+                }
+            }
+            break;
+            case DEBUG_CMD_GET_FW_VERSION:
+            {
+                String s = String.format("API:%d, FEN:%d.%d.%d, BLE:%d.%d.%d", data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
+
+                mTextLabel2.setText(s);
+                mTextLabel2.getRootView().postInvalidate();
+            }
+            break;
+            case DEBUG_CMD_DUMP_DATA:
+            {
+                String s = String.format("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+                        data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9],
+                        data[10], data[11], data[12], data[13], data[14], data[15]);
+                mTextLabel1.setText(s);
+                mTextLabel1.getRootView().postInvalidate();
+            }
+            break;
+            case DEBUG_CMD_GET_DATAPORT:
+                int i = getCmdIdx(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT);
+                Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                if (v != null) {
+                    v.setChecked(data[0] != 0);
+                    v.getRootView().postInvalidate();
+                }
+                v = (Switch) mCmdListView.findViewWithTag(i + 1);
+                if (v != null) {
+                    v.setChecked(data[1] != 0);
+                    v.getRootView().postInvalidate();
+                }
+                break;
+        }
+
+    }
+    public void didReceivePmgntData(int type, byte[] data, int dataLen, boolean errFlag) {
+
+    }
+    public void didReceiveStorageData(int type, byte[] data, int dataLen, boolean errFlag) {
+
+    }
+    public void didReceiveEepromData(int type, byte[] data, int dataLen, boolean errFlag) {
+
+    }
+    public void didReceiveLedData(int type, byte[] data, int dataLen, boolean errFlag) {
+
+    }
+
 }

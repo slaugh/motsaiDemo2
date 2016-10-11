@@ -10,7 +10,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.view.MenuItem;
 
-import com.motsai.neblina.Neblina;
+import com.mygdx.game.android.R;
+
 
 /**
  * An activity representing a single NebDevice detail screen. This
@@ -64,9 +65,10 @@ public class NebDeviceDetailActivity extends AppCompatActivity {
             nebdev.SetDelegate(fragment);
             nebdev.Connect(getBaseContext());
 
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.nebdevice_detail_container, fragment)
-                    .commit();
+            //TODO: Should I fix this or delete this whole activity???
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.nebdevice_detail_container, fragment)
+//                    .commit();
         }
     }
 

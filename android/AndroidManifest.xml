@@ -32,7 +32,7 @@
         android:theme="@style/GdxTheme">
 
         <activity
-            android:name="com.mygdx.game.android.AndroidLauncher"
+            android:name="com.mygdx.game.android.ControlPanel.AndroidLauncher"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize">
@@ -43,7 +43,7 @@
         </activity>
 
         <activity
-            android:name="com.mygdx.game.android.MainActivity"
+            android:name="com.mygdx.game.android.ControlPanel.MainActivity"
             android:theme="@style/SplashTheme"
             android:label="@string/app_name"
             android:screenOrientation="portrait">
@@ -52,7 +52,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name="com.mygdx.game.android.BLEDeviceScanActivity"
+        <activity android:name="com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity"
             android:screenOrientation="portrait">
         </activity>
 

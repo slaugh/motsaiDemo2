@@ -25,6 +25,8 @@ import android.os.ParcelUuid;
 import android.support.annotation.Nullable;
 import android.util.SparseArray;
 
+import com.mygdx.game.android.R;
+
 import java.nio.ByteOrder;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Iterator;
 
-import com.motsai.neblina.Neblina;
 
 /**
  * An activity representing a list of NebDevices. This activity
@@ -203,22 +204,24 @@ public class NebDeviceListActivity extends AppCompatActivity {
                         arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, holder.mItem);
                         NebDeviceDetailFragment fragment = new NebDeviceDetailFragment();
                         fragment.setArguments(arguments);
-                        //fragment.SetItem(holder.mItem);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.nebdevice_detail_container, fragment)
-                                .commit();
+                        //fragment.SetItem(holder.mNebDev);
+
+                        //TODO: fix this or remove this activity
+//                        getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.nebdevice_detail_container, fragment)
+//                                .commit();
                     } else {
                         Context context = v.getContext();
                         //Bundle arguments = new Bundle();
 
-                       // arguments.putSerializable(NebDeviceDetailFragment.ARG_ITEM_ID, holder.mItem);
+                       // arguments.putSerializable(NebDeviceDetailFragment.ARG_ITEM_ID, holder.mNebDev);
 
                         Intent intent = new Intent(context, NebDeviceDetailActivity.class);
                         intent.putExtra(NebDeviceDetailFragment.ARG_ITEM_ID, holder.mItem);
 
                         context.startActivity(intent);
                     }
-                    //holder.mItem.Connect(getBaseContext());
+                    //holder.mNebDev.Connect(getBaseContext());
                 }
             });
         }

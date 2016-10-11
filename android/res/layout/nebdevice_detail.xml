@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/neblina_detail"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.motsai.nebctrlpanel.NebDeviceDetailFragment"
+    android:weightSum="2">
+
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="337dp"
+        android:id="@+id/listView"
+        android:scrollbars="vertical"
+        android:contextClickable="true"
+        android:nestedScrollingEnabled="true"
+        android:choiceMode="singleChoice"
+        android:fastScrollEnabled="false">
+<!--
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="0.11"
+        android:id="@+id/commandTable">
+    </TableLayout>
+        -->
+    </ListView>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/textView1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Medium Text"
+        android:id="@+id/textView2" />
+
+
+</LinearLayout>

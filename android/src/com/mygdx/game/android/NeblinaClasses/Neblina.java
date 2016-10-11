@@ -16,8 +16,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
-import com.mygdx.game.android.NeblinaDelegate;
-
 import java.util.List;
 import java.util.UUID;
 

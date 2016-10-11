@@ -16,8 +16,9 @@ import android.widget.TableRow;
 import android.app.Fragment;
 import android.widget.CompoundButton;
 
-import com.motsai.neblina.NebCmdItem;
-import com.motsai.neblina.Neblina;
+import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
+import com.mygdx.game.android.R;
+
 
 /**
  * Created by hoanmotsai on 2016-08-03.

@@ -17,7 +17,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
 import com.mygdx.game.Invaders;
-import com.mygdx.game.android.AndroidGetQ;
+import com.mygdx.game.android.NeblinaClasses.AndroidGetQ;
 import com.mygdx.game.android.NeblinaClasses.Quaternions;
 
 import java.util.LinkedList;

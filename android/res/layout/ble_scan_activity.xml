@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@drawable/bg_gradient"
-    tools:context=".BLEDeviceScanActivity">
+    tools:context=".ControlPanel.BLEDeviceScanActivity">
 
     <ListView
         android:layout_width="300dp"
@@ -31,33 +31,15 @@
 
     <TableLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/textView"
         android:layout_toEndOf="@android:id/list"
         android:layout_marginTop="15dp"
-        android:id="@+id/tableLayout"
-        android:layout_above="@+id/fragment3">
+        android:id="@+id/tableLayout">
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/BLE_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="BLE Data Port"
-                android:id="@+id/BLE_Data_Port"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
 
         </TableRow>
 
@@ -65,22 +47,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/UART_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
+        </TableRow>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="UART Data Port"
-                android:id="@+id/UART_Data_Port"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
         </TableRow>
 
@@ -88,22 +59,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/QUATERNION_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
+        </TableRow>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Quaternion Streaming"
-                android:id="@+id/Quaternion_Streaming"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
         </TableRow>
 
@@ -111,22 +71,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/MAG_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
+        </TableRow>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mag Stream"
-                android:id="@+id/Mag_Stream"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
         </TableRow>
 
@@ -134,22 +83,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/LOCK_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
+        </TableRow>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Lock Heading Ref"
-                android:id="@+id/Lock_Heading_Ref"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
         </TableRow>
 
@@ -157,174 +95,24 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/ERASE_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Flash Erase All"
-                android:id="@+id/Flash_Erase_All"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
         </TableRow>
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/RECORD_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Flash Record"
-                android:id="@+id/Flash_Record"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
         </TableRow>
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/PLAYBACK_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Flash Playback"
-                android:id="@+id/Flash_Playback"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
         </TableRow>
 
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/LED0_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Set LED0"
-                android:id="@+id/Set_LED0"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/LED1_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Set LED1"
-                android:id="@+id/Set_LED1"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ToggleButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New ToggleButton"
-                android:id="@+id/HEADING_BUTTON"
-                android:layout_column="0"
-                android:checked="false"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Heading"
-                android:id="@+id/Heading"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <Button
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="READ"
-                android:id="@+id/EEPROM_BUTTON"
-                android:layout_column="0"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="EEPROM READ"
-                android:id="@+id/EEPROM_READ"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <EditText
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/CHARGE_INPUT"
-                android:layout_column="0"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Charge Current in mA"
-                android:id="@+id/Charge_Current_in_mA"
-                android:layout_column="1"
-                android:textColor="#ffff"
-                android:textSize="20dp"/>
         </TableRow>
 
         <TableRow
@@ -422,7 +210,7 @@
         android:layout_toEndOf="@+id/textView"/>
 
     <fragment
-        android:name="com.mygdx.game.android.BLEDeviceScanActivity$GameFragment"
+        android:name="com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity$GameFragment"
         android:id="@+id/fragment3"
         android:layout_width="wrap_content"
         android:layout_height="300dp"
@@ -440,5 +228,15 @@
         android:layout_above="@+id/fragment3"
         android:layout_alignParentStart="true"
         android:layout_alignEnd="@+id/textView" />
+
+    <fragment
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:name="com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment"
+        android:layout_below="@+id/tableLayout"
+        android:id="@+id/fragment"
+        android:layout_alignParentEnd="true"
+        android:layout_toEndOf="@+id/refreshButton"
+        android:layout_above="@+id/fragment3" />
 
 </RelativeLayout>
