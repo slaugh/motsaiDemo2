@@ -1,4 +1,4 @@
-package com.mygdx.game.android;
+package com.mygdx.game.android.Adapters;
 
 import android.content.Context;
 import android.util.Log;
@@ -8,6 +8,9 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
+import com.mygdx.game.android.R;
 
 import java.util.List;
 

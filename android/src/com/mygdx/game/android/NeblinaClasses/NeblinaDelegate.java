@@ -1,4 +1,4 @@
-package com.mygdx.game.android;
+package com.mygdx.game.android.NeblinaClasses;
 
 
 /**

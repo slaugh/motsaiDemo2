@@ -1,4 +1,4 @@
-package com.mygdx.game.android;
+package com.mygdx.game.android.NeblinaClasses;
 
 
 /**
@@ -17,10 +17,10 @@ public class Quaternions extends Object {
 
 
     //Default Constructor
-    Quaternions (){}
+    public Quaternions (){}
 
 //    //Complete Constructor
-    Quaternions(String timestamp, double q1, double q2, double q3, double q4){
+    public Quaternions(String timestamp, double q1, double q2, double q3, double q4){
         this.timestamp = timestamp;
         this.q1 = q1;
         this.q2 = q2;

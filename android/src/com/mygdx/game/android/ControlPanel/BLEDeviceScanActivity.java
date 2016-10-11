@@ -1,8 +1,7 @@
-package com.mygdx.game.android;
+package com.mygdx.game.android.ControlPanel;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -20,15 +19,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -39,6 +34,12 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
 import com.mygdx.game.Invaders;
+import com.mygdx.game.android.AndroidGetQ;
+import com.mygdx.game.android.CustomListAdapter;
+import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
+import com.mygdx.game.android.NeblinaClasses.Neblina;
+import com.mygdx.game.android.Quaternions;
+import com.mygdx.game.android.R;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.MediaType;
@@ -58,7 +59,6 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFragmentApplication.Callbacks{
 
@@ -359,186 +359,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
             }
         }
     };
-    
-    //THESE FUNCTIONS ARE CALLED WHEN WE CLICK A BUTTON
-    @OnClick(R.id.refreshButton)
-    public void onRefreshButtonClick(View view){
-        if(debug_mode ==true) {
-            Log.w("BLUETOOTH_DEBUG", "REFRESHING!");
-        }
-        scanLeDevice(false);
-        mDeviceList.clear();
-        mDeviceNameList.clear();
-        mLeDeviceListAdapter.notifyDataSetChanged();
-        scanLeDevice(true);
-    }
-
-    @OnClick(R.id.BLE_BUTTON)
-    public void onBLEButtonClick(View view){
-            Log.w("BLUETOOTH_DEBUG", "BLE BUTTON PRESSED!");
-
-        byte value = 1;
-        if(is_BLE_BUTTON_on){
-            value = 0;
-        }
-
-        if(activeDevice!=null){
-            activeDevice.setDataPort(0, value);
-        }
-        else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.UART_BUTTON)
-    public void onUARTButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "UART BUTTON PRESSED!");
-        byte value = 1;
-        if(is_UART_BUTTON_on){
-            value = 0;
-        }
-        if(activeDevice!=null){
-            activeDevice.setDataPort(1, value);
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.QUATERNION_BUTTON)
-    public void onQuaternionButtonClick(View view) {
-        Log.w("BLUETOOTH_DEBUG", "QUATERNION BUTTON PRESSED!");
-
-        if(activeDevice!=null){
-            activeDevice.streamQuaternion(!is_QUATERNION_BUTTON_on);
-            is_QUATERNION_BUTTON_on = !is_QUATERNION_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.MAG_BUTTON)
-    public void onMAGButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "MAG BUTTON PRESSED!");
-
-        if(activeDevice!=null){
-            activeDevice.streamMAG(!is_MAG_BUTTON_on);
-            is_MAG_BUTTON_on = !is_MAG_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-
-    }
-
-    @OnClick(R.id.LOCK_BUTTON)
-    public void onLOCKButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "LOCK BUTTON PRESSED!");
-
-        if(activeDevice!=null){
-            activeDevice.setLockHeadingReference(!is_LOCK_BUTTON_on);
-            is_LOCK_BUTTON_on = !is_LOCK_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-
-
-    }
-
-    @OnClick(R.id.ERASE_BUTTON)
-    public void onERASEButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "ERASE BUTTON PRESSED!");
-
-        if(activeDevice!=null){
-            activeDevice.eraseStorage(!is_ERASE_BUTTON_on);
-            is_ERASE_BUTTON_on = !is_ERASE_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.RECORD_BUTTON)
-    public void onRECORDButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "RECORD BUTTON PRESSED!");
-
-        if(activeDevice!=null){
-            activeDevice.sessionRecord(!is_RECORD_BUTTON_on);
-            is_RECORD_BUTTON_on = !is_RECORD_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-
-    }
-
-    @OnClick(R.id.PLAYBACK_BUTTON)
-    public void onPLAYBACKButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "PLAYBACK BUTTON PRESSED!");
-
-        if(activeDevice!=null){
-            activeDevice.sessionPlayback(!is_PLAYBACK_BUTTON_on, playbackNumber);
-            is_PLAYBACK_BUTTON_on = !is_PLAYBACK_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.LED0_BUTTON)
-    public void onLED0ButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "LED0 BUTTON PRESSED!");
-
-        byte value = (byte)0x00;
-        if(is_LED0_BUTTON_on == false) {
-                value = (byte)0xff;
-            }
-        if(activeDevice!=null){
-            activeDevice.setLed((byte) 0, value);
-            is_LED0_BUTTON_on = !is_LED0_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.LED1_BUTTON)
-    public void onLED1ButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "LED1 BUTTON PRESSED!");
-
-        byte value = (byte)0x00;
-        if(is_LED1_BUTTON_on == false){
-            value = (byte)0xff;
-        }
-        if(activeDevice!=null){
-            activeDevice.setLed((byte) 1, value);
-            is_LED1_BUTTON_on = !is_LED1_BUTTON_on;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.EEPROM_BUTTON)
-    public void onEEPROMButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "EEPROM BUTTON PRESSED!");
-        if(activeDevice!=null){
-            activeDevice.eepromRead(eepromCounter);
-            eepromCounter++;
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
-
-    @OnClick(R.id.CHARGE_INPUT)
-    public void onCHARGEButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "CHARGE BUTTON PRESSED!");
-        TextView mEdit = (EditText)findViewById(R.id.CHARGE_INPUT);
-        String value = mEdit.getText().toString();
-
-        if(activeDevice!=null){
-            if(isInteger(value, 10)){
-            activeDevice.setBatteryChargeCurrent(Integer.parseInt(value));
-            }else{
-                Toast.makeText(this, "Please enter an integer value", Toast.LENGTH_LONG).show();
-            }
-        }else{
-            Log.w("BLUETOOTH_DEBUG", "DEVICE NOT READY");
-        }
-    }
 
     public static boolean isInteger(String s, int radix) {
         if(s.isEmpty()) return false;

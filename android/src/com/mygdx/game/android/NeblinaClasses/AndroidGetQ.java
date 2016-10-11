@@ -1,4 +1,6 @@
-package com.mygdx.game.android;
+package com.mygdx.game.android.NeblinaClasses;
+
+import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
 
 /**
  * Created by scott on 2016-05-11.

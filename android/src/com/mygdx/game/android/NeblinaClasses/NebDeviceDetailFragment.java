@@ -1,4 +1,4 @@
-package com.mygdx.game.android;
+package com.mygdx.game.android.NeblinaClasses;
 
 
 /**
@@ -13,6 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import com.mygdx.game.android.BLEDeviceScanActivity;
+import com.mygdx.game.android.NeblinaClasses.Neblina;
+import com.mygdx.game.android.NeblinaDelegate;
+import com.mygdx.game.android.R;
 
 import java.util.Arrays;
 
