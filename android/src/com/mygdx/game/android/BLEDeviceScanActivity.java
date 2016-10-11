@@ -329,7 +329,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
             sendBroadcast(intent);
         }
 
-
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
 
         @Override
@@ -360,8 +359,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
             }
         }
     };
-
-
+    
     //THESE FUNCTIONS ARE CALLED WHEN WE CLICK A BUTTON
     @OnClick(R.id.refreshButton)
     public void onRefreshButtonClick(View view){
@@ -374,7 +372,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         mLeDeviceListAdapter.notifyDataSetChanged();
         scanLeDevice(true);
     }
-
 
     @OnClick(R.id.BLE_BUTTON)
     public void onBLEButtonClick(View view){
@@ -555,13 +552,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         return true;
     }
 
-    @OnClick(R.id.GAME_BUTTON)
-    public void onGAMEButtonClick(View view){
-        Log.w("BLUETOOTH_DEBUG", "GAME BUTTON PRESSED!");
-        Intent intent = new Intent(this,AndroidLauncher.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
-    }
 
     //TODO: Add a stream to cloud button -> maybe integrate with an
 

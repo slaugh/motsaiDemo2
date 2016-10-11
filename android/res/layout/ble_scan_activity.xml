@@ -17,19 +17,7 @@
         android:layout_height="wrap_content"
         android:id="@android:id/list"
         android:layout_below="@+id/textView"
-        android:layout_marginTop="15dp"
-        android:layout_above="@+id/fragment3" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/emptyText"
-        android:id="@android:id/empty"
-        android:layout_alignTop="@android:id/list"
-        android:layout_marginTop="256dp"
-        android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/tableLayout"
-        android:textAlignment="center"/>
+        android:layout_marginTop="15dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -40,16 +28,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_marginRight="50dp"/>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Refresh"
-        android:id="@+id/refreshButton"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
-        android:layout_above="@+id/GAME_BUTTON"
-        android:layout_centerHorizontal="true"/>
 
     <TableLayout
         android:layout_width="match_parent"
@@ -443,22 +421,24 @@
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@+id/textView"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Start Game!"
-        android:id="@+id/GAME_BUTTON"
-        android:layout_alignParentBottom="true"
-        android:layout_alignEnd="@+id/refreshButton"
-        android:layout_alignStart="@+id/refreshButton"/>
-
     <fragment
         android:name="com.mygdx.game.android.BLEDeviceScanActivity$GameFragment"
         android:id="@+id/fragment3"
         android:layout_width="wrap_content"
         android:layout_height="300dp"
-        android:layout_above="@+id/refreshButton"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Refresh"
+        android:id="@+id/refreshButton"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_above="@+id/fragment3"
+        android:layout_alignParentStart="true"
+        android:layout_alignEnd="@+id/textView" />
 
 </RelativeLayout>
