@@ -65,8 +65,9 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        View rootView = inflater.inflate(R.layout.ble_scan_activity, container, true);//Not sure why we need root view
+        Log.w("FRAGMENT DEBUG", "onCreate for NebDeviceDetailFragment is called!");
+        View rootView = null;//Not sure why we need root view
+//        rootView = inflater.inflate(R.layout.ble_scan_activity, container, false);
         q1_text = (TextView)getActivity().findViewById(R.id.Q1_TEXT);
         q2_text = (TextView)getActivity().findViewById(R.id.Q2_TEXT);
         q3_text = (TextView)getActivity().findViewById(R.id.Q3_TEXT);

@@ -252,9 +252,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         }
     }
 
-
-    //TODO: Implement a replacement, find the correct callback placement for our custom list adaptor
-
     public void onListItemClick(String deviceKey) {
 
         //Get the NEBLINA device and setup the NEBLINA interface
@@ -267,13 +264,12 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         activeDeviceDelegate.setArguments(arguments);
         activeDevice.Connect(getBaseContext());
 
-//TODO: Remove re-creation of the game???
         this.getFragmentManager().beginTransaction()
                     .add(activeDeviceDelegate, "Fun")
                     .commit();
 
         //Tell the user he's connected
-        Toast.makeText(this, "Connecting to " + activeDevice.toString(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Connecting to " + deviceKey, Toast.LENGTH_LONG).show();
     }
 
     //Callback for when a BLE device is found

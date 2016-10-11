@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,7 +62,7 @@ public class CustomListAdapter extends BaseAdapter {
 
         //Build a new View if needed
         if(convertView == null){
-            convertView = LayoutInflater.from(context).inflate(R.layout.custom_neblina_list_row,null);
+            convertView = LayoutInflater.from(context).inflate(R.layout.custom_neblina_select_device_row,null);
             holder = new ViewHolder();
             holder.tv = (TextView) convertView.findViewById(R.id.custom_neblina_list_text);
             convertView.setTag(holder);
@@ -78,7 +77,6 @@ public class CustomListAdapter extends BaseAdapter {
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//            parent.onListItemClick(v.getTag().toString());
 //
                 ViewHolder temp = (ViewHolder) v.getTag();
                 p.onListItemClick(temp.tv.getText().toString());
