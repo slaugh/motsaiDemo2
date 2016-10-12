@@ -64,7 +64,9 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             new NebCmdItem(NEB_CTRL_SUBSYS_EEPROM, EEPROM_CMD_READ, "EEPROM Read", 2, "Read"),
             new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_POWERMGMT, Neblina.POWERMGMT_CMD_SET_CHARGE_CURRENT, "Charge Current in mA", 3, ""),
             new NebCmdItem((byte)0xf, (byte)0, "Motion data stream", 1, ""),
-            new NebCmdItem((byte)0xf, (byte)1, "Heading", 1, "")
+            new NebCmdItem((byte)0xf, (byte)1, "Heading", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_PEDOMETER, "Pedometer", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_SIT_STAND, "Sit Stand", 1, "")
     };
 
     //The dummy content this fragment is presenting.
