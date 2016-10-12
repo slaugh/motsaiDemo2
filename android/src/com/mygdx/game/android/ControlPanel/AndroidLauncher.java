@@ -40,7 +40,6 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.w("PROGRAM FLOW", "IN AndroidLauncher onCreate!");
-        // 6. Finally, replace the AndroidLauncher activity content with the Libgdx Fragment.
         GameFragment fragment = new GameFragment();
         FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
         trans.replace(android.R.id.content, fragment);
@@ -48,7 +47,6 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
     }
 
     public static class GameFragment extends AndroidFragmentApplication {
-        // 5. Add the initializeForView() code in the Fragment's onCreateView method.
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             Log.w("PROGRAM FLOW", "IN GAME FRAGMENT onCreateView()!");
@@ -66,7 +64,7 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
 //		super.onCreate(savedInstanceState);
 //
 //        Log.w("PROGRAM FLOW", "IN ANDROID LAUNCHER!");
-//        //TODO: Play around with AWS drivers here
+//        //TODO: Clean AWS Code up and integrate with the buttons
 ////        simulateQuaternionGeneration.start();
 //
 ////		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();

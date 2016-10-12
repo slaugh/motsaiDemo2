@@ -125,7 +125,8 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         checkBluetoothPermissions();
         setContentView(R.layout.ble_scan_activity);
         ButterKnife.inject(this);
-        initializeVariables();
+        activateBLE();
+        setupFragmentAdapters();
         scanLeDevice(true);
     }
 
@@ -185,18 +186,23 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     }
 
 
-    private void initializeVariables() {
+    private void setupFragmentAdapters() {
 
-        activateBLE();
+        //Setup the BLE Devices list fragment and its adapter
+        //When a BLE item is clicked, it goes to onListItemClick()
         ListView yourListView = (ListView) findViewById(android.R.id.list);
         mDeviceNameList = new ArrayList<String>(); //Data Source
         mLeDeviceListAdapter = new CustomListAdapter(this, getApplicationContext(),mDeviceNameList);
         yourListView.setAdapter(mLeDeviceListAdapter);
+
+        //Setup the automatically generated buttons fragment
+//            activeDeviceDelegate = (NebDeviceDetailFragment) getFragmentManager().findFragmentById(R.id.button_list_fragment); //This is returning null
+        activeDeviceDelegate = (NebDeviceDetailFragment) getFragmentManager().findFragmentById(R.id.button_list_fragment);
+
+        //TODO: Add an adapter here somewhere???
     }
 
     public void activateBLE() {
-
-        activeDeviceDelegate = new NebDeviceDetailFragment();
         //This should pass
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
@@ -252,6 +258,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         }
     }
 
+    //Callback function for when a user chooses a BLE device
     public void onListItemClick(String deviceKey) {
 
         //Get the NEBLINA device and setup the NEBLINA interface
@@ -261,12 +268,12 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         Bundle arguments = new Bundle();
         arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
         activeDeviceDelegate.SetItem(activeDevice);
-        activeDeviceDelegate.setArguments(arguments);
-        activeDevice.Connect(getBaseContext());
+//        activeDeviceDelegate.setArguments(arguments);
+//        activeDevice.Connect(getBaseContext());
 
-        this.getFragmentManager().beginTransaction()
-                    .add(activeDeviceDelegate, "Fun")
-                    .commit();
+//        this.getFragmentManager().beginTransaction()
+//                    .add(activeDeviceDelegate, "Fun")
+//                    .commit();
 
         //Tell the user he's connected
         Toast.makeText(this, "Connecting to " + deviceKey, Toast.LENGTH_LONG).show();

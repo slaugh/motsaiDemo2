@@ -169,7 +169,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         mBleGatt = null;
     }
 
-    // MARK : **** BluetoothGattCallback
+    // Here are where the BluetoothGattCallbacks are
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         String intentAction;
@@ -194,7 +194,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             BluetoothGattDescriptor descriptor = descriptors.get(0);//I used to do this in onCharactericticWrite???
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);//I used to do this in onCharactericticWrite???
             mBleGatt.writeDescriptor(descriptor);
-
 
             if (mDelegate != null && first_connect==true) {
                 mDelegate.initializeNeblina();

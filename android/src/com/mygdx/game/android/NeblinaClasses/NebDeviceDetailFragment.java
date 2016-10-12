@@ -84,12 +84,9 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static String Q3_string = "";
     public static long timestamp_N =0;
 
-    public static TextView q1_text;
-    public static TextView q2_text;
-    public static TextView q3_text;
-    public static TextView q4_text;
 
     public NebDeviceDetailFragment() {
+
     }
 
     public void SetItem(Neblina item) {
@@ -102,53 +99,58 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            mNebDev = (Neblina) getArguments().getParcelable(ARG_ITEM_ID);
-            mNebDev.SetDelegate(this);
-        }
+
+
+        //        if (getArguments().containsKey(ARG_ITEM_ID)) {
+//            // Load the dummy content specified by the fragment
+//            // arguments. In a real-world scenario, use a Loader
+//            // to load content from a content provider.
+//            mNebDev = (Neblina) getArguments().getParcelable(ARG_ITEM_ID);
+//            mNebDev.SetDelegate(this);
+//        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View rootView = inflater.inflate(R.layout.nebdevice_detail, container, false);
+        final View rootView = inflater.inflate(R.layout.nebdevice_detail, container, false);
 
-        if (mNebDev != null) {
-            mTextLabel1 = (TextView) rootView.findViewById(R.id.textView1);
-            mTextLabel2 = (TextView) rootView.findViewById(R.id.textView2);
-            mCmdListView = (ListView) rootView.findViewById(R.id.listView);
-            NebListAdapter adapter = new NebListAdapter(getActivity().getApplicationContext(),
-                    R.layout.nebcmd_item, cmdList);
 
-            mCmdListView.setAdapter(adapter);
-            mCmdListView.setTag(this);
-            mCmdListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(AbsListView absListView, int scrollState) {
-                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTextLabel1 = (TextView) rootView.findViewById(R.id.textView1);
+                mTextLabel2 = (TextView) rootView.findViewById(R.id.textView2);
+                mCmdListView = (ListView) rootView.findViewById(R.id.listView);
+            }
+        });
+
+        NebListAdapter adapter = new NebListAdapter(getActivity().getApplicationContext(),
+                R.layout.nebcmd_item, cmdList);
+
+        mCmdListView.setAdapter(adapter);
+        mCmdListView.setTag(this);
+        mCmdListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
+
+                    if (mNebDev != null) {
                         mNebDev.getMotionStatus();
                         mNebDev.getDataPortState();
                         mNebDev.getLed();
                         mNebDev.getFirmwareVersion();
                     }
                 }
+            }
 
-                @Override
-                public void onScroll(AbsListView absListView, int i, int i1, int i2) {
+            @Override
+            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
 
-                }
-            });
-        }
+            }
+        });
 
-        q1_text = (TextView)getActivity().findViewById(R.id.Q1_TEXT);
-        q2_text = (TextView)getActivity().findViewById(R.id.Q2_TEXT);
-        q3_text = (TextView)getActivity().findViewById(R.id.Q3_TEXT);
-        q4_text = (TextView)getActivity().findViewById(R.id.Q4_TEXT);
-        q1_text.setText("Hello Earthling!");
 
         return rootView;
     }
@@ -221,7 +223,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     }
 
     public void didReceiveRSSI(int rssi) {
-
     }
 
     public void didReceiveFusionData(int type , byte[] data, boolean errFlag) {
@@ -229,10 +230,15 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             case MOTION_CMD_QUATERNION:
 
                 //Merge Note A. Neblina Code
-                String s = String.format("%d, %d, %d", data[4], data[6], data[8]);
-                Log.w("BLUETOOTH DEBUG", s);
-                mTextLabel1.setText(s);
-                mTextLabel1.getRootView().postInvalidate();
+                final String s = String.format("%d, %d, %d", data[4], data[6], data[8]);
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTextLabel1.setText(s);
+                        mTextLabel1.getRootView().postInvalidate();
+                    }
+                });
 
 
                 //Merge Note B. Original Code
@@ -272,17 +278,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     Q1_string = String.valueOf(latest_Q1);
                     Q2_string = String.valueOf(latest_Q2);
                     Q3_string = String.valueOf(latest_Q3);
-
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            q1_text.setText(Q0_string);
-                            q2_text.setText(Q1_string);
-                            q3_text.setText(Q2_string);
-                            q4_text.setText(Q3_string);
-                        }
-                    });
-
                 break;
         }
     }
@@ -295,7 +290,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     }
     public void didReceiveStorageData(int type, byte[] data, boolean errFlag) {
-        BLEDeviceScanActivity.playbackNumber = 0;    //TODO: Get the sessionID from the storageData and feed it to Flash Playback button
+        BLEDeviceScanActivity.playbackNumber = 0;
 
     }
     public void didReceiveEepromData(int type, byte[] data, boolean errFlag) {
