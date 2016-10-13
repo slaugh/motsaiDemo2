@@ -94,19 +94,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
 
-    //Button state variables
-    public static boolean is_BLE_BUTTON_on           = false;
-    public static boolean is_UART_BUTTON_on          = false;
-    public static boolean is_QUATERNION_BUTTON_on    = false;
-    public static boolean is_MAG_BUTTON_on           = false;
-    public static boolean is_LOCK_BUTTON_on          = false;
-    public static boolean is_ERASE_BUTTON_on         = false;
-    public static boolean is_RECORD_BUTTON_on        = false;
-    public static boolean is_PLAYBACK_BUTTON_on      = false;
-    public static boolean is_LED0_BUTTON_on          = false;
-    public static boolean is_LED1_BUTTON_on          = false;
-    public static boolean is_EEPROM_BUTTON_on        = false;
-    public static boolean is_CHARGE_INPUT_on         = false;
     int eepromCounter = 0;
     public static int playbackNumber = 0;
 
@@ -116,60 +103,36 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 8;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         //Main initialization code
-        checkBluetoothPermissions();
+        activateBLE();
         setContentView(R.layout.ble_scan_activity);
         ButterKnife.inject(this);
-        activateBLE();
         setupFragmentAdapters();
         scanLeDevice(true);
+
+        //Activity process:
+        //A. Populate list via mLeScanCallback
+        //B. Wait for the user to choose a device
+        //C. Trigger onListItemClick to create a NebDeviceDetailFragment based on selection
     }
 
-    private void checkBluetoothPermissions(){
-
-        //        //Check to see if Bluetooth Adapters are enabled and available
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        //Case 1: No Bluetooth on this device
-        if(mBluetoothAdapter==null)
-        {
-            Context context = getApplicationContext();
-            CharSequence text = "Bluetooth is not available, use a device that has bluetooth";
-            int duration = Toast.LENGTH_LONG;
-
-            Toast toast = Toast.makeText(context, text, duration);
-            toast.show();
-        } else{
-            //Case 2: Bluetooth exists but is not enabled
-            if (!mBluetoothAdapter.isEnabled()) {
-                // Bluetooth is not enable :)
-                //Explain to the user that he needs to enable his bluetooth
-                Context context = getApplicationContext();
-                CharSequence text = "Bluetooth is not enabled, please activate your Bluetooth";
-                int duration = Toast.LENGTH_LONG;
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
-
-                //Send the user to go enable bluetooth and come back when finished
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-
-            } else {
-                //Case 3: Bluetooth is enabled so start the program
-            }
+    public void activateBLE() {
+        //Check that this device supports BLE
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+            finish(); //optional kill switch
         }
 
         //For newer versions you need to get permission from the user to access location information
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             if(this.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("This app neds location access");
-                builder.setMessage("Please gran location access");
+                builder.setTitle("This app needs location access to access bluetooth");
+                builder.setMessage("Please grant location access");
                 builder.setPositiveButton(android.R.string.ok,null);
                 builder.setOnDismissListener(new DialogInterface.OnDismissListener(){
 
@@ -181,32 +144,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                 });
                 builder.show();
             }
-            return;
-        }
-    }
-
-
-    private void setupFragmentAdapters() {
-
-        //Setup the BLE Devices list fragment and its adapter
-        //When a BLE item is clicked, it goes to onListItemClick()
-        ListView yourListView = (ListView) findViewById(android.R.id.list);
-        mDeviceNameList = new ArrayList<String>(); //Data Source
-        mLeDeviceListAdapter = new CustomListAdapter(this, getApplicationContext(),mDeviceNameList);
-        yourListView.setAdapter(mLeDeviceListAdapter);
-
-        //Setup the automatically generated buttons fragment
-//            activeDeviceDelegate = (NebDeviceDetailFragment) getFragmentManager().findFragmentById(R.id.button_list_fragment); //This is returning null
-        activeDeviceDelegate = (NebDeviceDetailFragment) getFragmentManager().findFragmentById(R.id.button_list_fragment);
-
-        //TODO: Add an adapter here somewhere???
-    }
-
-    public void activateBLE() {
-        //This should pass
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
-            finish(); //optional kill switch
         }
 
         //Get the Bluetooth Adapter
@@ -220,6 +157,19 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         }
+    }
+
+    private void setupFragmentAdapters() {
+
+        //1. NeblinaDeviceList: Setup the BLE Devices list fragment and its adapter
+        //When a BLE item is clicked, it goes to onListItemClick()
+        ListView yourListView = (ListView) findViewById(android.R.id.list);
+        mDeviceNameList = new ArrayList<String>(); //Data Source
+        mLeDeviceListAdapter = new CustomListAdapter(this, getApplicationContext(),mDeviceNameList);
+        yourListView.setAdapter(mLeDeviceListAdapter);
+
+        //2. DetailList: Setup the automatically generated buttons fragment
+        activeDeviceDelegate = (NebDeviceDetailFragment) getFragmentManager().findFragmentById(R.id.button_list_fragment);
     }
 
     private void scanLeDevice(final boolean enable) {

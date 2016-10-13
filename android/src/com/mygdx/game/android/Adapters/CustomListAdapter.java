@@ -18,17 +18,16 @@ import java.util.List;
  * Created by scott on 2016-10-07.
  */
 
+//This function maps the Neblina items discovered to the UI using a View Holder Pattern
 public class CustomListAdapter extends BaseAdapter {
 
     List<String> neblinas;
     private Context context;
-    int [] imageId;
     BLEDeviceScanActivity p;
-    private static LayoutInflater inflater=null;
+    private LayoutInflater inflater;
 
     //Constructor
     public CustomListAdapter(BLEDeviceScanActivity parent, Context mainActivity, List<String> neblinaDevices) {
-        // TODO Auto-generated constructor stub
         p = parent;
         context=mainActivity;
         neblinas=neblinaDevices;
@@ -37,24 +36,20 @@ public class CustomListAdapter extends BaseAdapter {
     }
     @Override
     public int getCount() {
-        // TODO Auto-generated method stub
         return neblinas.size();
     }
 
     public void add(String neblinaString){
-        Log.w("CUSTOM LIST ADAPTOR", "RANDOM ADD FUNCTION CALLED");
         neblinas.add(neblinaString);
     }
 
     @Override
     public Object getItem(int position) {
-        // TODO Auto-generated method stub
         return neblinas.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        // TODO Auto-generated method stub
         return 0;
     }
 
@@ -76,16 +71,13 @@ public class CustomListAdapter extends BaseAdapter {
 
         holder.tv.setText(neblinas.get(position));
 
-        //TODO: Implement on click listener
+        //Set the click listener calling the BLE Activity's onListItemClick function
         convertView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//
                 ViewHolder temp = (ViewHolder) v.getTag();
                 p.onListItemClick(temp.tv.getText().toString());
-
-//                ListView l, View v, int position, long id
-                Toast.makeText(context, "You Clicked "+neblinas.get(position), Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Connecting to "+neblinas.get(position), Toast.LENGTH_SHORT).show();
             }
         });
         return convertView;

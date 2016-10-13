@@ -19,6 +19,8 @@ import android.util.Log;
 import java.util.List;
 import java.util.UUID;
 
+import static com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity.ACTION_DATA_AVAILABLE;
+
 
 /**
  * Created by hoanmotsai on 2016-06-10.
@@ -122,12 +124,14 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte MOTION_CMD_ROTATION_INFO		= 0x12;
     public static final byte MOTION_CMD_EXTRN_HEADING_CORR  = 0x13;
 
+    boolean runOnce = true;
+
     BluetoothDevice Nebdev;
     long DevId;
     BluetoothGatt mBleGatt;
     NeblinaDelegate mDelegate;
     BluetoothGattCharacteristic mCtrlChar;
-    boolean first_connect = true;
+//    boolean first_connect = true;
 
     public void SetDelegate(NeblinaDelegate neblinaDelegate) {
         mDelegate = neblinaDelegate;
@@ -187,37 +191,52 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             //Get the characteristic from the discovered gatt server
             Log.w("BLUETOOTH DEBUG", "SERVICES DISCOVERED!");
             BluetoothGattService service = gatt.getService(NEB_SERVICE_UUID);
+
+            //Get the DATA characteristic and set notifications on
             BluetoothGattCharacteristic data_characteristic = service.getCharacteristic(NEB_DATACHAR_UUID);
             mCtrlChar = service.getCharacteristic(NEB_CTRLCHAR_UUID);
-            gatt.setCharacteristicNotification(data_characteristic, true); //I used to do this in onCharactericticWrite???
-            List<BluetoothGattDescriptor> descriptors = data_characteristic.getDescriptors(); //I used to do this in onCharactericticWrite???
-            BluetoothGattDescriptor descriptor = descriptors.get(0);//I used to do this in onCharactericticWrite???
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);//I used to do this in onCharactericticWrite???
+            gatt.setCharacteristicNotification(data_characteristic, true);
+            List<BluetoothGattDescriptor> descriptors = data_characteristic.getDescriptors();
+            BluetoothGattDescriptor descriptor = descriptors.get(0);
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBleGatt.writeDescriptor(descriptor);
 
-            if (mDelegate != null && first_connect==true) {
-                mDelegate.initializeNeblina();
-                first_connect = false;
-            }
+//            if (mDelegate != null) {
+//                mDelegate.initializeNeblina();
+//            }
         }
     }
 
+
+    //PROCESS RECEIVED PACKETS
     @Override
     public void onCharacteristicChanged (BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic) {
+
+
+
         if (mDelegate == null) {
             Log.w("BLUETOOTH DEBUG", "Delegate is null");
             return;
         }
 
+        if(runOnce == true){
+            mDelegate.initializeNeblina();
+            runOnce = false;
+        }
+
         final byte[] pkt =  characteristic.getValue();
         int subsys = pkt[0] & 0x1f;
+
+        if(subsys != NEB_CTRL_SUBSYS_MOTION_ENG) Log.w("BLUETOOTH DEBUG", "Packet Received. Size = " + pkt.length + ". Subsystem: " + subsys);
+
         final int pktype = pkt[0] >> 5;
         byte[] data = new byte[16];
         boolean errFlag = false;
 
         if (pktype == NEB_CTRL_PKTYPE_ACK)
             return;
+
 
         if ((subsys & 0x80) == 0x80)
         {
@@ -231,28 +250,42 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         switch (subsys) {
             case NEB_CTRL_SUBSYS_DEBUG:		// Status & logging
+                Log.w("BLUETOOTH DEBUG", "Received a DEBUG packet");
                 mDelegate.didReceiveDebugData(pkt[3], data, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_MOTION_ENG:// Motion Engine
                 mDelegate.didReceiveFusionData(pkt[3], data, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_POWERMGMT:	// Power management
+                Log.w("BLUETOOTH DEBUG", "Received a POWERMGMT packet");
                 mDelegate.didReceivePmgntData(pkt[3], data, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_LED:		// LED control
+                Log.w("BLUETOOTH DEBUG", "Received a LED packet");
                 mDelegate.didReceiveLedData(pkt[3], data, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_STORAGE:	//NOR flash memory recorder
+                Log.w("BLUETOOTH DEBUG", "Received a STORAGE packet");
                 mDelegate.didReceiveStorageData(pkt[3], data, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_EEPROM:	//small EEPROM storage
+                Log.w("BLUETOOTH DEBUG", "Received a EEPROM packet");
                 mDelegate.didReceiveEepromData(pkt[3], data, errFlag);
                 break;
         }
     }
-    // MARK : **** API
 
-    // Debug
+    //Might be used for individual reads
+    @Override
+    // Result of a characteristic read operation
+    public void onCharacteristicRead(BluetoothGatt gatt,
+                                     BluetoothGattCharacteristic characteristic,
+                                     int status) {
+        Log.w("BLUETOOTH DEBUG", "ON CHARACTERISTIC READ!!!");
+    }
+
+
+    // PACKET CREATION CALLS
     public void getDataPortState() {
         if (isDeviceReady() == false) {
             return;
@@ -300,6 +333,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG","Requesting Motion Status");
     }
 
     public void getRecorderStatus() {
@@ -384,7 +418,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
-    //TODO: Which button triggers this???
     public void eepromWrite(int pageNo, byte[] data) {
         if (isDeviceReady() == false) {
             return;
@@ -424,6 +457,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG", "GET LED STATE");
         //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
@@ -466,7 +500,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         mBleGatt.writeCharacteristic(mCtrlChar);
         //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
-
 
     public void setBatteryChargeCurrent(int Current) {
         if (isDeviceReady() == false) {
@@ -729,9 +762,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
     public void streamQuaternion(boolean Enable)
     {
-        Log.w("BLUETOOTH_DEBUG", "streamingQuaternions!" + Enable );
+        Log.w("BLUETOOTH DEBUG", "streamingQuaternions!" + Enable );
         if (isDeviceReady() == false) {
-            Log.w("BLUETOOTH_DEBUG", "Device is not ready!" + Enable );
+            Log.w("BLUETOOTH DEBUG", "Device is not ready!" + Enable );
             return;
         }
 
@@ -1009,11 +1042,13 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         return 0;
     }
 
+
+    //PARCELABLE INTERFACE FUNCTIONS
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeValue(Nebdev);
-        out.writeLong(DevId); //TODO: Do we really need these parcel writes???
-//        out.writeValue(mBleGatt); //Seems to cause problems when pressing Start Game Button
+        out.writeLong(DevId);
+//        out.writeValue(mBleGatt);
 //        out.writeValue(mDelegate);
 //        out.writeValue(mCtrlChar);
     }

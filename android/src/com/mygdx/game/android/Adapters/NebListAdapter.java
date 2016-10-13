@@ -32,50 +32,55 @@ public class NebListAdapter extends ArrayAdapter<NebCmdItem> {
         super(context, resource, items);
     }
 
+    //Create the button on the screen when it comes into view on the UI
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        View v = convertView;
+        View view = convertView;
 
-        if (v == null) {
-            LayoutInflater vi;
-            vi = LayoutInflater.from(getContext());
-            v = vi.inflate(R.layout.nebcmd_item, null);
+        if (view == null) {
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+            view = inflater.inflate(R.layout.nebcmd_item, null);
         }
 
-        NebCmdItem p = getItem(position);
+        NebCmdItem item = getItem(position);
 
-        if (p != null) {
-            TextView label = (TextView) v.findViewById(R.id.textView);
-            label.setText(p.mName);
+        //Setup all all the types but INVISIBLE
+        if (item != null) {
+            TextView label = (TextView) view.findViewById(R.id.textView);
+            label.setText(item.mName);
 
-            Switch c = (Switch)v.findViewById(R.id.switch1);
-            c.setVisibility(View.INVISIBLE);
-            c.setTag(-1);
-            Button b = (Button) v.findViewById(R.id.button);
-            b.setVisibility(View.INVISIBLE);
-            b.setTag(-1);
-            TextView t = (TextView) v.findViewById(R.id.textField);
-            t.setVisibility(View.INVISIBLE);
-            t.setTag(-1);
-//            b.setId(300 + i);
+            Switch aSwitch = (Switch)view.findViewById(R.id.switch1);
+            aSwitch.setVisibility(View.INVISIBLE);
+            aSwitch.setTag(-1);
+//            aSwitch.isActivated();
+//            aSwitch.setActivated();
 
-            switch (p.mActuator) {
+            Button button = (Button) view.findViewById(R.id.button);
+            button.setVisibility(View.INVISIBLE);
+            button.setTag(-1);
+//            button.isActivated();
+//            button.setActivated();
+
+            TextView textView = (TextView) view.findViewById(R.id.textField);
+            textView.setVisibility(View.INVISIBLE);
+            textView.setTag(-1);
+
+            //Depending on the type, set it and make it VISIBLE
+            switch (item.mActuator) {
                 case 1: // Switch
-                    c.setVisibility(View.VISIBLE);
-                    c.setTag(position);
-                    c.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
+                    aSwitch.setVisibility(View.VISIBLE);
+                    aSwitch.setTag(position);
+                    aSwitch.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
                         @Override
-                        public void onCheckedChanged(CompoundButton vi, boolean isChecked)
+                        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked)
                         {
-                           // int idx = (int)vi.getTag();
-
-                            ViewParent vp = vi.getParent().getParent().getParent();
-                            if (vp instanceof ListView) {
-                                ListView lv = (ListView) vp;
-                                NebDeviceDetailFragment fr = (NebDeviceDetailFragment)lv.getTag();
-                                if (fr != null) {
-                                   fr.onSwitchButtonChanged(vi, isChecked);
+                            ViewParent viewParent = compoundButton.getParent().getParent().getParent();
+                            if (viewParent instanceof ListView) {
+                                ListView lv = (ListView) viewParent;
+                                NebDeviceDetailFragment fragment = (NebDeviceDetailFragment)lv.getTag();
+                                if (fragment != null) {
+                                   fragment.onSwitchButtonChanged(compoundButton, isChecked);
                                 }
                             }
                         }
@@ -83,9 +88,9 @@ public class NebListAdapter extends ArrayAdapter<NebCmdItem> {
 
                     break;
                 case 2: // Button
-                    b.setVisibility(View.VISIBLE);
-                    b.setTag(position);
-                    b.setOnClickListener(new OnClickListener() {
+                    button.setVisibility(View.VISIBLE);
+                    button.setTag(position);
+                    button.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View vi)
                         {
@@ -102,13 +107,13 @@ public class NebListAdapter extends ArrayAdapter<NebCmdItem> {
                     });
                     break;
                 case 3: // Text field
-                    t.setVisibility(View.VISIBLE);
-                    t.setTag(position);
+                    textView.setVisibility(View.VISIBLE);
+                    textView.setTag(position);
 
                     break;
             }
         }
 
-        return v;
+        return view;
     }
 }

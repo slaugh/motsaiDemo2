@@ -32,8 +32,15 @@ import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_SET_DATAPO
 import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_SET_INTERFACE;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.EEPROM_CMD_READ;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.EEPROM_CMD_WRITE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_DOWN_SAMPLE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_EULER_ANGLE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_EXTFORCE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_IMU_DATA;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_MAG_DATA;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_MOTION_STATE;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_QUATERNION;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_SET_FUSION_TYPE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.MOTION_CMD_TRAJECTORY_RECORD;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_DEBUG;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_EEPROM;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_MOTION_ENG;
@@ -41,7 +48,12 @@ import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_STOR
 import static com.mygdx.game.android.NeblinaClasses.Neblina.STORAGE_CMD_PLAY;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.STORAGE_CMD_RECORD;
 
+//This Class implements a Detail List for one specific selected Neblina device
 public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate {
+
+    private Neblina mNebDev;
+
+    public boolean isStreaming = false;
 
     /**
      * The fragment argument representing the item ID that this fragment
@@ -51,7 +63,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static final NebCmdItem[] cmdList = new NebCmdItem[] {
             new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "BLE Data Port", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "UART Data Port", 1, ""),
-            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_SET_FUSION_TYPE, "Fusion 9 axis", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_SET_FUSION_TYPE, "Fusion 9 axis", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION, "Quaternion Stream", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MAG_DATA, "Mag Stream", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_LOCK_HEADING_REF, "Lock Heading Ref.", 1, ""),
@@ -70,7 +82,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     };
 
     //The dummy content this fragment is presenting.
-    public Neblina mNebDev;
     private TextView mTextLabel1;
     private TextView mTextLabel2;
     private ListView mCmdListView;
@@ -87,29 +98,20 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static long timestamp_N =0;
 
 
+    //Default Constructor
     public NebDeviceDetailFragment() {
-
     }
 
+    //Maps a specific Neblina device to the Detail List Fragment
     public void SetItem(Neblina item) {
 
         mNebDev = item;
         mNebDev.SetDelegate(this);
-//        mNebDev.Connect(getActivity());
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
-        //        if (getArguments().containsKey(ARG_ITEM_ID)) {
-//            // Load the dummy content specified by the fragment
-//            // arguments. In a real-world scenario, use a Loader
-//            // to load content from a content provider.
-//            mNebDev = (Neblina) getArguments().getParcelable(ARG_ITEM_ID);
-//            mNebDev.SetDelegate(this);
-//        }
     }
 
     @Override
@@ -153,21 +155,22 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             }
         });
 
-
         return rootView;
     }
 
     public void onSwitchButtonChanged(CompoundButton button, boolean isChecked) {
         int idx = (int) button.getTag();
-        if (idx < 0 && idx > cmdList.length)
+        if (idx < 0 && idx > cmdList.length){
+            Log.w("DEBUG", "Using a strange Tag");
             return;
+        }
 
         switch (cmdList[idx].mSubSysId) {
             case NEB_CTRL_SUBSYS_DEBUG:
                 switch (cmdList[idx].mCmdId)
                 {
                     case DEBUG_CMD_SET_INTERFACE:
-                        //mNedDev.setInterface(isChecked == true ? 1);
+//                        mNebDev.setInterface(isChecked == true ? 1);
                         break;
                     case DEBUG_CMD_DUMP_DATA:
                         break;
@@ -217,11 +220,11 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
         return -1;
     }
 
-
     public void initializeNeblina() {
         //By default start streaming quaternions
         mNebDev.streamQuaternion(true);
-        BLEDeviceScanActivity.is_QUATERNION_BUTTON_on = true;
+        didConnectNeblina();
+        isStreaming = true;
     }
 
     public void didReceiveRSSI(int rssi) {
@@ -242,7 +245,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     }
                 });
 
-
                 //Merge Note B. Original Code
                 //Puts the characteristic values into the intent
                 if (data != null && data.length > 0) {
@@ -253,9 +255,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
                 //TODO: Fix timestamping
 //            timestamp_N = (timestamp[3]&0xff)<<24 | (timestamp[2]&0xff)<<16 | (timestamp[1]&0xff)<<8 | (timestamp[0]&0xff)<<0;
-                //TODO: Fix and Test Sending Data To The Cloud
-//          sendQuaternionsToCloudRESTfully(Q0_string, Q1_string, Q2_string, Q3_string); //The pitcher works, the catcher fails
-//            new getAWSID().execute("gogogo!"); //Uses the AWS Android SDK -> Seems to work
 
                 //Unwrap Data Based on Motsai's Neblina Protocol
                 if (data.length == 16) {
@@ -282,6 +281,32 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     Q3_string = String.valueOf(latest_Q3);
                 break;
         }
+                break;
+
+            case MOTION_CMD_DOWN_SAMPLE:
+                Log.w("DEBUG", "COMMAND: MOTION_CMD_DOWN_SAMPLE");
+                break;
+            case MOTION_CMD_MOTION_STATE:
+                Log.w("DEBUG", "COMMAND: MOTION_CMD_MOTION_STATE");
+                break;
+            case MOTION_CMD_IMU_DATA:
+                Log.w("DEBUG", "COMMAND: MOTION_CMD_IMU_DATA");
+                break;
+            case MOTION_CMD_EULER_ANGLE:
+                Log.w("DEBUG", "COMMAND: MOTION_CMD_EULER_ANGLE");
+                break;
+            case MOTION_CMD_EXTFORCE:
+                Log.w("DEBUG", "COMMAND: MOTION_CMD_EXTFORCE");
+                break;
+            case MOTION_CMD_SET_FUSION_TYPE:
+                Log.w("DEBUG", "COMMAND: MOTION_CMD_SET_FUSION_TYPE");
+                break;
+            case MOTION_CMD_TRAJECTORY_RECORD:
+                Log.w("DEBUG", "COMMAND: MOTION_CMD_TRAJECTORY_RECORD");
+                break;
+            default:
+                Log.w("DEBUG", "COMMAND CODE NOT RECOGNIZED");
+
     }
     }
 
@@ -321,6 +346,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
 
     public void didReceiveDebugData(int type, byte[] data, int dataLen, boolean errFlag) {
+
+        Log.w("BLUETOOTH DEBUG", "RECEIVING DEBUG INFORMATION!");
         NebListAdapter adapter = (NebListAdapter) mCmdListView.getAdapter();
 
         switch (type) {
