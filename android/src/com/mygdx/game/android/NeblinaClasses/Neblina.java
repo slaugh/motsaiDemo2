@@ -124,7 +124,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte MOTION_CMD_ROTATION_INFO		= 0x12;
     public static final byte MOTION_CMD_EXTRN_HEADING_CORR  = 0x13;
 
-    boolean runOnce = true;
+    int initializeState = 0;
 
     BluetoothDevice Nebdev;
     long DevId;
@@ -200,12 +200,21 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             BluetoothGattDescriptor descriptor = descriptors.get(0);
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBleGatt.writeDescriptor(descriptor);
-
-//            if (mDelegate != null) {
-//                mDelegate.initializeNeblina();
-//            }
         }
     }
+    
+
+    //This is called as a confirmation of setting CharacteristicNotifications
+    @Override
+    public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status){
+        if(initializeState==0){
+            Log.w("BLUETOOTH DEBUG", "onDescriptorWRITE was called");
+            mDelegate.initializeNeblina();
+            initializeState = 1;
+        }
+    }
+
+
 
 
     //PROCESS RECEIVED PACKETS
@@ -213,23 +222,15 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void onCharacteristicChanged (BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic) {
 
-
-
         if (mDelegate == null) {
             Log.w("BLUETOOTH DEBUG", "Delegate is null");
             return;
         }
 
-        if(runOnce == true){
-            mDelegate.initializeNeblina();
-            runOnce = false;
-        }
 
         final byte[] pkt =  characteristic.getValue();
         int subsys = pkt[0] & 0x1f;
-
         if(subsys != NEB_CTRL_SUBSYS_MOTION_ENG) Log.w("BLUETOOTH DEBUG", "Packet Received. Size = " + pkt.length + ". Subsystem: " + subsys);
-
         final int pktype = pkt[0] >> 5;
         byte[] data = new byte[16];
         boolean errFlag = false;
@@ -237,40 +238,41 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         if (pktype == NEB_CTRL_PKTYPE_ACK)
             return;
 
-
         if ((subsys & 0x80) == 0x80)
         {
             subsys &= 0x7F;
             errFlag = true;
         }
 
-        for (int i = 0; i < 16; i++)
+        int datalen = pkt.length - 4;
+
+        for (int i = 0; i < datalen; i++)
             data[i] = pkt[i+4];
 
 
         switch (subsys) {
             case NEB_CTRL_SUBSYS_DEBUG:		// Status & logging
                 Log.w("BLUETOOTH DEBUG", "Received a DEBUG packet");
-                mDelegate.didReceiveDebugData(pkt[3], data, errFlag);
+                mDelegate.didReceiveDebugData(pkt[3], data, datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_MOTION_ENG:// Motion Engine
                 mDelegate.didReceiveFusionData(pkt[3], data, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_POWERMGMT:	// Power management
                 Log.w("BLUETOOTH DEBUG", "Received a POWERMGMT packet");
-                mDelegate.didReceivePmgntData(pkt[3], data, errFlag);
+                mDelegate.didReceivePmgntData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_LED:		// LED control
                 Log.w("BLUETOOTH DEBUG", "Received a LED packet");
-                mDelegate.didReceiveLedData(pkt[3], data, errFlag);
+                mDelegate.didReceiveLedData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_STORAGE:	//NOR flash memory recorder
                 Log.w("BLUETOOTH DEBUG", "Received a STORAGE packet");
-                mDelegate.didReceiveStorageData(pkt[3], data, errFlag);
+                mDelegate.didReceiveStorageData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_EEPROM:	//small EEPROM storage
                 Log.w("BLUETOOTH DEBUG", "Received a EEPROM packet");
-                mDelegate.didReceiveEepromData(pkt[3], data, errFlag);
+                mDelegate.didReceiveEepromData(pkt[3], data,  datalen, errFlag);
                 break;
         }
     }
@@ -281,7 +283,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void onCharacteristicRead(BluetoothGatt gatt,
                                      BluetoothGattCharacteristic characteristic,
                                      int status) {
-        Log.w("BLUETOOTH DEBUG", "ON CHARACTERISTIC READ!!!");
+        String data_string = characteristic.toString();
+        Log.w("BLUETOOTH DEBUG", "ON CHARACTERISTIC READ:" + data_string);
     }
 
 
@@ -300,6 +303,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf); //writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
         mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG","Requesting Data Port State");
     }
 
     public void getFirmwareVersion() {
@@ -316,6 +320,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);//device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
         mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG","Getting Firmware Version");
     }
 
     public void getMotionStatus() {

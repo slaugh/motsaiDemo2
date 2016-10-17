@@ -222,9 +222,16 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     public void initializeNeblina() {
         //By default start streaming quaternions
-        mNebDev.streamQuaternion(true);
+//        mNebDev.streamQuaternion(true);
         didConnectNeblina();
         isStreaming = true;
+    }
+
+    public void didConnectNeblina() {
+        mNebDev.getFirmwareVersion();
+        mNebDev.getMotionStatus();
+        mNebDev.getDataPortState();
+        mNebDev.getLed();
     }
 
     public void didReceiveRSSI(int rssi) {
@@ -310,22 +317,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     }
     }
 
-    public void didReceiveDebugData(int type, byte[] data, boolean errFlag) {
-
-    }
-    public void didReceivePmgntData(int type, byte[] data, boolean errFlag) {
-
-    }
-    public void didReceiveStorageData(int type, byte[] data, boolean errFlag) {
-        BLEDeviceScanActivity.playbackNumber = 0;
-
-    }
-    public void didReceiveEepromData(int type, byte[] data, boolean errFlag) {
-
-    }
-    public void didReceiveLedData(int type, byte[] data, boolean errFlag) {
-
-    }
 
     private float normalizedQ(byte[] q) {
         if(q.length==2){
@@ -337,15 +328,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     }
 
 
-    public void didConnectNeblina() {
-        mNebDev.getMotionStatus();
-        mNebDev.getDataPortState();
-        mNebDev.getLed();
-        mNebDev.getFirmwareVersion();
-    }
-
-
-    public void didReceiveDebugData(int type, byte[] data, int dataLen, boolean errFlag) {
+    public void didReceiveDebugData(int type, final byte[] data, int dataLen, boolean errFlag) {
 
         Log.w("BLUETOOTH DEBUG", "RECEIVING DEBUG INFORMATION!");
         NebListAdapter adapter = (NebListAdapter) mCmdListView.getAdapter();
@@ -357,94 +340,174 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     case 1:    // Playback
                     {
                         int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
-                        Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                        final Switch v = (Switch) mCmdListView.findViewWithTag(i);
                         if (v != null) {
-                            v.setChecked(false);
-                            v.getRootView().postInvalidate();
+
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    v.setChecked(false);
+                                    v.getRootView().postInvalidate();
+                                }
+                            });
+
                         }
                         i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY);
-                        v = (Switch) mCmdListView.findViewWithTag(i);
-                        if (v != null) {
-                            v.setChecked(true);
-                            v.getRootView().postInvalidate();
+                        final Switch v2 = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v2 != null) {
+
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    v2.setChecked(true);
+                                    v2.getRootView().postInvalidate();
+                                }
+                            });
                         }
                     }
                     break;
                     case 2:    // Recording
                     {
                         int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY);
-                        Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                        final Switch v = (Switch) mCmdListView.findViewWithTag(i);
                         if (v != null) {
-                            v.setChecked(false);
-                            v.getRootView().postInvalidate();
+
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    v.setChecked(false);
+                                    v.getRootView().postInvalidate();
+                                }
+                            });
+
+
                         }
                         i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
-                        v = (Switch) mCmdListView.findViewWithTag(i);
-                        if (v != null) {
-                            v.setChecked(true);
-                            v.getRootView().postInvalidate();
+                        final Switch v2 = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v2 != null) {
+
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    v2.setChecked(true);
+                                    v2.getRootView().postInvalidate();
+                                }
+                            });
                         }
                     }
                     break;
                     default: {
                         int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
-                        Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                        final Switch v = (Switch) mCmdListView.findViewWithTag(i);
                         if (v != null) {
-                            v.setChecked(false);
-                            v.getRootView().postInvalidate();
+
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    v.setChecked(false);
+                                    v.getRootView().postInvalidate();
+                                }
+                            });
+
+
                         }
                         i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY);
-                        v = (Switch) mCmdListView.findViewWithTag(i);
-                        if (v != null) {
-                            v.setChecked(false);
-                            v.getRootView().postInvalidate();
+                        final Switch v2 = (Switch) mCmdListView.findViewWithTag(i);
+                        if (v2 != null) {
+
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    v2.setChecked(false);
+                                    v2.getRootView().postInvalidate();
+                                }
+                            });
                         }
                     }
                     break;
                 }
                 int i = getCmdIdx(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION);
-                Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                final Switch v = (Switch) mCmdListView.findViewWithTag(i);
 
                 if (v != null) {
-                    v.setChecked(((data[4] & 8) >> 3) != 0);
-                    v.getRootView().postInvalidate();
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            v.setChecked(((data[4] & 8) >> 3) != 0);
+                            v.getRootView().postInvalidate();
+                        }
+                    });
+
                 }
                 i = getCmdIdx(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MAG_DATA);
-                v = (Switch) mCmdListView.findViewWithTag(i);
-                if (v != null) {
-                    v.setChecked(((data[4] & 0x80) >> 7) != 0);
-                    v.getRootView().postInvalidate();
+                final Switch v2 = (Switch) mCmdListView.findViewWithTag(i);
+                if (v2 != null) {
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            v2.setChecked(((data[4] & 0x80) >> 7) != 0);
+                            v2.getRootView().postInvalidate();
+                        }
+                    });
+
                 }
             }
             break;
             case DEBUG_CMD_GET_FW_VERSION:
             {
-                String s = String.format("API:%d, FEN:%d.%d.%d, BLE:%d.%d.%d", data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
+                final String s = String.format("API:%d, FEN:%d.%d.%d, BLE:%d.%d.%d", data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
 
-                mTextLabel2.setText(s);
-                mTextLabel2.getRootView().postInvalidate();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTextLabel2.setText(s);
+                        mTextLabel2.getRootView().postInvalidate();
+                    }
+                });
+
             }
             break;
             case DEBUG_CMD_DUMP_DATA:
             {
-                String s = String.format("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+                final String s = String.format("%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
                         data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9],
                         data[10], data[11], data[12], data[13], data[14], data[15]);
-                mTextLabel1.setText(s);
-                mTextLabel1.getRootView().postInvalidate();
+
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTextLabel1.setText(s);
+                        mTextLabel1.getRootView().postInvalidate();
+                    }
+                });
+
             }
             break;
             case DEBUG_CMD_GET_DATAPORT:
                 int i = getCmdIdx(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT);
-                Switch v = (Switch) mCmdListView.findViewWithTag(i);
+                final Switch v = (Switch) mCmdListView.findViewWithTag(i);
                 if (v != null) {
-                    v.setChecked(data[0] != 0);
-                    v.getRootView().postInvalidate();
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            v.setChecked(data[0] != 0);
+                            v.getRootView().postInvalidate();
+                        }
+                    });
                 }
-                v = (Switch) mCmdListView.findViewWithTag(i + 1);
-                if (v != null) {
-                    v.setChecked(data[1] != 0);
-                    v.getRootView().postInvalidate();
+                final Switch v2 = (Switch) mCmdListView.findViewWithTag(i + 1);
+                if (v2 != null) {
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            v2.setChecked(data[1] != 0);
+                            v2.getRootView().postInvalidate();
+                        }
+                    });
                 }
                 break;
         }

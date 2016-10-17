@@ -21,9 +21,9 @@ public interface NeblinaDelegate {
     void initializeNeblina();
     void didReceiveRSSI(int rssi);
     void didReceiveFusionData(int type , byte[] data, boolean errFlag);
-    void didReceiveDebugData(int type, byte[] data, boolean errFlag);
-    void didReceivePmgntData(int type, byte[] data, boolean errFlag);
-    void didReceiveStorageData(int type, byte[] data, boolean errFlag);
-    void didReceiveEepromData(int type, byte[] data, boolean errFlag);
-    void didReceiveLedData(int type, byte[] data, boolean errFlag);
+    void didReceiveDebugData(int type, byte[] data, int datalen, boolean errFlag);
+    void didReceivePmgntData(int type, byte[] data, int datalen, boolean errFlag);
+    void didReceiveStorageData(int type, byte[] data, int datalen, boolean errFlag);
+    void didReceiveEepromData(int type, byte[] data, int datalen, boolean errFlag);
+    void didReceiveLedData(int type, byte[] data, int datalen, boolean errFlag);
 }
