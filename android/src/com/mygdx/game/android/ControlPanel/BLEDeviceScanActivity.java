@@ -23,8 +23,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.cognito.CognitoSyncManager;
@@ -40,17 +42,7 @@ import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
 import com.mygdx.game.android.NeblinaClasses.Neblina;
 import com.mygdx.game.android.NeblinaClasses.Quaternions;
 import com.mygdx.game.android.R;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -59,9 +51,13 @@ import java.util.List;
 import java.util.Map;
 
 import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
 
 public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFragmentApplication.Callbacks{
 
+    @InjectView(R.id.refreshButton) Button refreshButton;
+    @InjectView(R.id.cloudToggleButton) Button toggleButton;
     //List Variables
     private static final int REQUEST_ENABLE_BT = 0;
     private List<String> mDeviceNameList;
@@ -89,10 +85,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private final static String TAG = BLEDeviceScanActivity.class.getSimpleName();
     private int mConnectionState = STATE_DISCONNECTED;
     public static final String ACTION_DATA_WRITE = "android.ble.common.ACTION_DATA_WRITE";
-    public static final MediaType MEDIA_TYPE_MARKDOWN
-            = MediaType.parse("text/x-markdown; charset=utf-8");
-    public static final MediaType JSON
-            = MediaType.parse("application/json; charset=utf-8");
 
     int eepromCounter = 0;
     public static int playbackNumber = 0;
@@ -101,7 +93,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 8;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +109,15 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         //A. Populate list via mLeScanCallback
         //B. Wait for the user to choose a device
         //C. Trigger onListItemClick to create a NebDeviceDetailFragment based on selection
+    }
+
+    @OnClick(R.id.refreshButton)void setRefreshButton(){
+
+    }
+
+    @OnClick(R.id.cloudToggleButton)void cloudToggle(){
+        ToggleButton toggle = (ToggleButton) findViewById(R.id.cloudToggleButton);
+        Log.w("DEBUG", toggle.isChecked()+"");
     }
 
     public void activateBLE() {

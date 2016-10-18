@@ -1030,9 +1030,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void writeToParcel(Parcel out, int flags) {
         out.writeValue(Nebdev);
         out.writeLong(DevId);
-//        out.writeValue(mBleGatt);
-//        out.writeValue(mDelegate);
-//        out.writeValue(mCtrlChar);
     }
 
     public static final Parcelable.Creator<Neblina> CREATOR
@@ -1048,8 +1045,5 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     private Neblina(Parcel in) {
         Nebdev = (BluetoothDevice) in.readValue(null);
         DevId = in.readLong();
-        mBleGatt = (BluetoothGatt) in.readValue(null);
-        mDelegate = (NeblinaDelegate) in.readValue(null);
-        mCtrlChar = (BluetoothGattCharacteristic) in.readValue(null);
     }
 }

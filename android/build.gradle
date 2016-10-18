@@ -131,6 +131,7 @@ dependencies {
 
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:+'
+//    compile 'com.jakewharton:butterknife:8.4.0'
     compile 'com.jakewharton:butterknife:6.1.0'
     compile 'com.squareup.okhttp:okhttp:2.2.0'
     compile 'com.android.support:support-v4:+'
