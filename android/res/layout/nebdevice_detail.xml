@@ -29,19 +29,66 @@
         -->
     </ListView>
 
-    <TextView
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/textView1" />
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Q1"
+            android:id="@+id/textView1"
+            android:layout_weight="1"
+            android:layout_height="22dp" />
+
+        <TextView
+            android:text="Q2"
+            android:layout_width="wrap_content"
+            android:layout_height="22dp"
+            android:id="@+id/textView2"
+            android:layout_weight="1"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <TextView
+            android:text="Q3"
+            android:layout_width="wrap_content"
+            android:layout_height="22dp"
+            android:id="@+id/textView3"
+            android:layout_weight="1"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+        <TextView
+            android:text="Q4"
+            android:layout_width="wrap_content"
+            android:layout_height="22dp"
+            android:id="@+id/textView4"
+            android:layout_weight="1"
+            android:textAppearance="@android:style/TextAppearance.Medium" />
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Medium Text"
-        android:id="@+id/textView2" />
+        android:text="Version Number"
+        android:id="@+id/versionText" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:text="Stream To Cloud"
+            android:layout_height="wrap_content"
+            android:id="@+id/button2"
+            android:layout_width="300dp"
+            android:textAlignment="center"
+            android:elevation="0dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
 
 
 </LinearLayout>

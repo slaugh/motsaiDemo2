@@ -202,7 +202,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             mBleGatt.writeDescriptor(descriptor);
         }
     }
-    
+
 
     //This is called as a confirmation of setting CharacteristicNotifications
     @Override
@@ -215,22 +215,17 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     }
 
 
-
-
     //PROCESS RECEIVED PACKETS
     @Override
     public void onCharacteristicChanged (BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic) {
 
         if (mDelegate == null) {
-            Log.w("BLUETOOTH DEBUG", "Delegate is null");
             return;
         }
 
-
         final byte[] pkt =  characteristic.getValue();
         int subsys = pkt[0] & 0x1f;
-        if(subsys != NEB_CTRL_SUBSYS_MOTION_ENG) Log.w("BLUETOOTH DEBUG", "Packet Received. Size = " + pkt.length + ". Subsystem: " + subsys);
         final int pktype = pkt[0] >> 5;
         byte[] data = new byte[16];
         boolean errFlag = false;
@@ -252,39 +247,24 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         switch (subsys) {
             case NEB_CTRL_SUBSYS_DEBUG:		// Status & logging
-                Log.w("BLUETOOTH DEBUG", "Received a DEBUG packet");
                 mDelegate.didReceiveDebugData(pkt[3], data, datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_MOTION_ENG:// Motion Engine
                 mDelegate.didReceiveFusionData(pkt[3], data, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_POWERMGMT:	// Power management
-                Log.w("BLUETOOTH DEBUG", "Received a POWERMGMT packet");
                 mDelegate.didReceivePmgntData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_LED:		// LED control
-                Log.w("BLUETOOTH DEBUG", "Received a LED packet");
                 mDelegate.didReceiveLedData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_STORAGE:	//NOR flash memory recorder
-                Log.w("BLUETOOTH DEBUG", "Received a STORAGE packet");
                 mDelegate.didReceiveStorageData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_EEPROM:	//small EEPROM storage
-                Log.w("BLUETOOTH DEBUG", "Received a EEPROM packet");
                 mDelegate.didReceiveEepromData(pkt[3], data,  datalen, errFlag);
                 break;
         }
-    }
-
-    //Might be used for individual reads
-    @Override
-    // Result of a characteristic read operation
-    public void onCharacteristicRead(BluetoothGatt gatt,
-                                     BluetoothGattCharacteristic characteristic,
-                                     int status) {
-        String data_string = characteristic.toString();
-        Log.w("BLUETOOTH DEBUG", "ON CHARACTERISTIC READ:" + data_string);
     }
 
 
@@ -303,7 +283,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf); //writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
         mBleGatt.writeCharacteristic(mCtrlChar);
-        Log.w("BLUETOOTH DEBUG","Requesting Data Port State");
     }
 
     public void getFirmwareVersion() {
@@ -320,7 +299,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);//device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
         mBleGatt.writeCharacteristic(mCtrlChar);
-        Log.w("BLUETOOTH DEBUG","Getting Firmware Version");
     }
 
     public void getMotionStatus() {
@@ -338,7 +316,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        Log.w("BLUETOOTH DEBUG","Requesting Motion Status");
     }
 
     public void getRecorderStatus() {

@@ -19,7 +19,6 @@ import android.widget.TextView;
 
 import com.mygdx.game.android.Adapters.NebCmdItem;
 import com.mygdx.game.android.Adapters.NebListAdapter;
-import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
 import com.mygdx.game.android.R;
 
 import java.util.Arrays;
@@ -53,8 +52,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     private Neblina mNebDev;
 
-    public boolean isStreaming = false;
-
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -84,6 +81,9 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     //The dummy content this fragment is presenting.
     private TextView mTextLabel1;
     private TextView mTextLabel2;
+    private TextView mTextLabel3;
+    private TextView mTextLabel4;
+    private TextView mVersionText;
     private ListView mCmdListView;
 
     //Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes)
@@ -96,7 +96,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static String Q2_string = "";
     public static String Q3_string = "";
     public static long timestamp_N =0;
-
 
     //Default Constructor
     public NebDeviceDetailFragment() {
@@ -120,12 +119,14 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
         final View rootView = inflater.inflate(R.layout.nebdevice_detail, container, false);
 
-
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mTextLabel1 = (TextView) rootView.findViewById(R.id.textView1);
                 mTextLabel2 = (TextView) rootView.findViewById(R.id.textView2);
+                mTextLabel3 = (TextView) rootView.findViewById(R.id.textView3);
+                mTextLabel4 = (TextView) rootView.findViewById(R.id.textView4);
+                mVersionText = (TextView) rootView.findViewById(R.id.versionText);
                 mCmdListView = (ListView) rootView.findViewById(R.id.listView);
             }
         });
@@ -154,7 +155,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
             }
         });
-
         return rootView;
     }
 
@@ -221,10 +221,11 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     }
 
     public void initializeNeblina() {
-        //By default start streaming quaternions
-//        mNebDev.streamQuaternion(true);
+        //Get device states
         didConnectNeblina();
-        isStreaming = true;
+
+        //By default start streaming quaternions
+        mNebDev.streamQuaternion(true);
     }
 
     public void didConnectNeblina() {
@@ -240,17 +241,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public void didReceiveFusionData(int type , byte[] data, boolean errFlag) {
         switch (type) {
             case MOTION_CMD_QUATERNION:
-
-                //Merge Note A. Neblina Code
-                final String s = String.format("%d, %d, %d", data[4], data[6], data[8]);
-
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mTextLabel1.setText(s);
-                        mTextLabel1.getRootView().postInvalidate();
-                    }
-                });
 
                 //Merge Note B. Original Code
                 //Puts the characteristic values into the intent
@@ -286,6 +276,27 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     Q1_string = String.valueOf(latest_Q1);
                     Q2_string = String.valueOf(latest_Q2);
                     Q3_string = String.valueOf(latest_Q3);
+
+                    //Merge Note A. Neblina Code
+                    final String s1 = String.format(Q0_string+ ", ");
+                    final String s2 = String.format(Q1_string + ", " );
+                    final String s3 = String.format(Q2_string + ", " );
+                    final String s4 = String.format(Q3_string );
+
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mTextLabel1.setText(s1);
+                            mTextLabel2.setText(s2);
+                            mTextLabel3.setText(s3);
+                            mTextLabel4.setText(s4);
+                            mTextLabel1.getRootView().postInvalidate();
+                            mTextLabel2.getRootView().postInvalidate();
+                            mTextLabel3.getRootView().postInvalidate();
+                            mTextLabel4.getRootView().postInvalidate();
+                        }
+                    });
+
                 break;
         }
                 break;
@@ -462,8 +473,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mTextLabel2.setText(s);
-                        mTextLabel2.getRootView().postInvalidate();
+                        mVersionText.setText(s);
+                        mVersionText.getRootView().postInvalidate();
                     }
                 });
 
