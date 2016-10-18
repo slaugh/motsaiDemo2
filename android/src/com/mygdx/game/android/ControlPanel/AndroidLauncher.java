@@ -59,23 +59,6 @@ public class AndroidLauncher extends FragmentActivity implements AndroidFragment
     }
 
 
-    //	@Override
-//	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-//		super.onCreate(savedInstanceState);
-//
-//        Log.w("PROGRAM FLOW", "IN ANDROID LAUNCHER!");
-//        //TODO: Clean AWS Code up and integrate with the buttons
-////        simulateQuaternionGeneration.start();
-//
-////		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
-////		Invaders invaders = new Invaders(invaderInterface);
-////		initializeForView(invaders, config);
-//
-
-//}
-
-
-
     public class runAWS extends AsyncTask<String, Void, Void> {
 
         @Override

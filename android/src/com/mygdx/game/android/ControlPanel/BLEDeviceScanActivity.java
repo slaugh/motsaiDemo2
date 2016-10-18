@@ -329,96 +329,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         return true;
     }
 
-
-    //TODO: Add a stream to cloud button -> maybe integrate with an
-
-    //************************************ HTTP NETWORKING CODE *****************************************************//
-    private void sendQuaternionsToCloudRESTfully(String q0_string, String q1_string, String q2_string, String q3_string) {
-        //Example GET URL - This worked!
-//        String databaseURL = "https://api.thingspeak.com/update?api_key=E3VK2KDK3IBGK8HT&field1=1";
-
-        //Example POST URL - This worked!
-//        String databaseURL ="https://api.thingspeak.com/update.json";
-
-        //Example AWS IoT URL - Returns "Missing Authentication Token" error
-//        String databaseURL = "https://A13X9WUMZAX5RM.iot.us-east-1.amazonaws.com/things/Neblina_Test1/shadow";
-
-        String databaseURL = "https://j4pguaz22a.execute-api.us-east-1.amazonaws.com/prod/dynamodump";
-
-        //Send Quaternions
-//        String apiKey = "b7721b89f28c6045846cfbc72c2c545c";
-//        String databaseURL = "https://api.forecast.io/forecast/" + apiKey +
-//                "/" + q0_string + "," + q1_string + "," + q2_string + "," + q3_string;
-
-        if (isNetworkAvailable()) {
-            OkHttpClient client = new OkHttpClient();
-
-            String postBody = "{" +
-                    " \"timestamp\":\"00000069\"," +
-                    " \"q1\":\"1\"," +
-                    " \"q2\":\"2\"," +
-                    " \"q3\":\"3\"," +
-                    " \"q4\":\"4\"" +
-                    "}";
-
-            Log.w("HTTP_DEBUG", "sending: " + postBody);
-
-            Request request = new Request.Builder()
-                    .url(databaseURL)
-                    .header("Content-Type", "application/json")
-                    .post(RequestBody.create(JSON, postBody))
-                    .build();
-            Call call = client.newCall(request);
-            call.enqueue(new Callback() {
-                @Override
-                public void onFailure(Request request, IOException e) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.w("HTTP_DEBUG", "onFailure's runOnUiThread was called");
-                        }
-                    });
-                    Log.w("HTTP_DEBUG", "onFailure was called");
-                }
-
-                @Override
-                public void onResponse(Response response) throws IOException {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                        }
-                    });
-                    try {
-                        String jsonData = response.body().string();
-                        Log.w("HTTP_DEBUG", jsonData);
-//                        Log.i(TAG, response.body().string()); //This was the offending clause
-                        if (response.isSuccessful()) {
-                            int i = parseJSONResponse(jsonData);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Log.w("HTTP_DEBUG", "Makes it to the second run()");
-                                }
-                            });
-
-                        } else {
-                           Log.w("HTTP_DEBUG", "HMMMMM Something bad happened here :(");
-                        }
-
-                    } catch (IOException e) {
-                        Log.e(TAG, "IOException caught: ", e);
-                    } catch (JSONException e) {
-                        Log.e(TAG, "JSONException caught: ", e);
-                    }
-                }
-            });
-        }
-        else {
-            Toast.makeText(this, "Network Is Unavailable!!!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
     private boolean isNetworkAvailable() {
 
         ConnectivityManager manager = (ConnectivityManager)
@@ -434,31 +344,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         }
         return isAvailable;
     }
-
-    //Not being used at the moment
-    private int parseJSONResponse(String jsonData)throws JSONException{
-
-//        Example JSON Parsing Code
-//        JSONObject response = new JSONObject(jsonData);
-//        String timezone = response.getString("timezone");
-//        JSONObject daily = response.getJSONObject("daily");
-//        JSONArray data = daily.getJSONArray("data");
-//
-//        String[] days = new String[data.length()];
-//
-//        for (int i = 0; i < data.length(); i++){
-//            JSONObject jsonDay = data.getJSONObject(i);
-//            String value = new String();
-//
-//            value = jsonDay.getString("summary");
-//            value = jsonDay.getString("icon");
-//            value = jsonDay.getDouble("temperatureMax");
-//            value = (jsonDay.getLong("time");
-//            value = (timezone);
-//
-//            days[i] = value;
-        return 0;
-        }
 
     public static class GameFragment extends AndroidFragmentApplication
     {
