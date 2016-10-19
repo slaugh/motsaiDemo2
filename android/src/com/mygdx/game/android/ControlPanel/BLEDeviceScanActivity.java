@@ -72,6 +72,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
     //Launch Visualization in a fragment
     public static AndroidGetQ invaderInterface = new AndroidGetQ();
+    public static AndroidGetQ invaderInterface2 = new AndroidGetQ();
 
     //GATT CALLBACK VARIABLES
     private static final int STATE_DISCONNECTED = 0;
@@ -352,7 +353,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             Log.w("PROGRAM FLOW", "IN GAME FRAGMENT onCreateView()!");
-            return initializeForView(new Invaders(invaderInterface));   }
+            return initializeForView(new Invaders(invaderInterface,invaderInterface2)); }
     }
 
     @Override

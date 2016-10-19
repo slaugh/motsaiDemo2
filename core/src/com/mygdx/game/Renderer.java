@@ -93,10 +93,13 @@ public class Renderer {
 		gl.glEnable(GL20.GL_DEPTH_TEST);
 		gl.glEnable(GL20.GL_CULL_FACE);
 		setProjectionAndCamera(simulation.ship);
+		setProjectionAndCamera(simulation.ship2);
 
 		modelBatch.begin(camera);
 		modelBatch.render(simulation.explosions);
 		if (!simulation.ship.isExploding) modelBatch.render(simulation.ship, lights);
+		if (!simulation.ship2.isExploding) modelBatch.render(simulation.ship2, lights);
+
 		modelBatch.render(simulation.invaders, lights);
 		modelBatch.render(simulation.blocks);
 		modelBatch.render(simulation.shots);
@@ -113,6 +116,13 @@ public class Renderer {
 			lastScore = simulation.score;
 			lastWave = simulation.wave;
 		}
+		if (simulation.ship2.lives != lastLives || simulation.score != lastScore || simulation.wave != lastWave) {
+			status = "lives: " + simulation.ship2.lives + " wave: " + simulation.wave + " score: " + simulation.score;
+			lastLives = simulation.ship2.lives;
+			lastScore = simulation.score;
+			lastWave = simulation.wave;
+		}
+
 		spriteBatch.enableBlending();
 		font.draw(spriteBatch, status, 0, 320);
 		spriteBatch.end();

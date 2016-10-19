@@ -48,6 +48,7 @@ public class Simulation implements Disposable {
 	public ArrayList<Shot> shots = new ArrayList<Shot>();
 	public ArrayList<Explosion> explosions = new ArrayList<Explosion>();
 	public Ship ship;
+	public Ship ship2;
 	public Shot shipShot = null;
 	public transient SimulationListener listener;
 	public float multiplier = 1;
@@ -55,6 +56,7 @@ public class Simulation implements Disposable {
 	public int wave = 1;
 
 	public Model shipModel;
+	public Model shipModel2;
 	public Model invaderModel;
 	public Model blockModel;
 	public Model shotModel;
@@ -73,15 +75,19 @@ public class Simulation implements Disposable {
 	private void populate () {
 		ObjLoader objLoader = new ObjLoader();
 		shipModel = objLoader.loadModel(Gdx.files.internal("data/ship.obj"));
+		shipModel2 = objLoader.loadModel(Gdx.files.internal("data/ship.obj"));
 		invaderModel = objLoader.loadModel(Gdx.files.internal("data/invader.obj"));
 		blockModel = objLoader.loadModel(Gdx.files.internal("data/block.obj"));
 		shotModel = objLoader.loadModel(Gdx.files.internal("data/shot.obj"));
 
 		final Texture shipTexture = new Texture(Gdx.files.internal("data/ship.png"), Format.RGB565, true);
 		shipTexture.setFilter(TextureFilter.MipMap, TextureFilter.Linear);
+		final Texture shipTexture2 = new Texture(Gdx.files.internal("data/ship.png"), Format.RGB565, true);
+		shipTexture2.setFilter(TextureFilter.MipMap, TextureFilter.Linear);
 		final Texture invaderTexture = new Texture(Gdx.files.internal("data/invader.png"), Format.RGB565, true);
 		invaderTexture.setFilter(TextureFilter.MipMap, TextureFilter.Linear);
 		shipModel.materials.get(0).set(TextureAttribute.createDiffuse(shipTexture));
+		shipModel2.materials.get(0).set(TextureAttribute.createDiffuse(shipTexture2));
 		invaderModel.materials.get(0).set(TextureAttribute.createDiffuse(invaderTexture));
 
 		((ColorAttribute)blockModel.materials.get(0).get(ColorAttribute.Diffuse)).color.set(0, 0, 1, 0.5f);
@@ -163,7 +169,11 @@ public class Simulation implements Disposable {
 		explosionModel.manageDisposable(explosionMesh);
 
 		ship = new Ship(shipModel);
+		ship2 = new Ship(shipModel2);
+
 		ship.transform.rotate(1, 0, 0, 180);
+		ship2.transform.rotate(1,0,0,180);
+//		ship2.transform.translate(2,2,5);
 
 		for (int row = 0; row < 4; row++) {
 			for (int column = 0; column < 8; column++) {
@@ -183,10 +193,12 @@ public class Simulation implements Disposable {
 
 	public void update (float delta) {
 		ship.update(delta);
+		ship2.update(delta);
 		updateInvaders(delta);
 		updateShots(delta);
 		updateExplosions(delta);
 		checkShipCollision();
+		checkShipCollision2();
 		checkInvaderCollision();
 		checkBlockCollision();
 		checkNextLevel();
@@ -292,6 +304,46 @@ public class Simulation implements Disposable {
 		}
 	}
 
+	private void checkShipCollision2 () {
+		removedShots.clear();
+
+		if (!ship2.isExploding) {
+			ship2.transform.getTranslation(tmpV1);
+			for (int i = 0; i < shots.size(); i++) {
+				Shot shot = shots.get(i);
+				if (!shot.isInvaderShot) continue;
+				shot.transform.getTranslation(tmpV2);
+				if (tmpV1.dst(tmpV2) < Ship.SHIP_RADIUS) {
+					removedShots.add(shot);
+					shot.hasLeftField = true;
+					ship2.lives--;
+					ship2.isExploding = true;
+					explosions.add(new Explosion(explosionModel, tmpV1));
+					if (listener != null) listener.explosion();
+					break;
+				}
+			}
+
+			for (int i = 0; i < removedShots.size(); i++)
+				shots.remove(removedShots.get(i));
+		}
+
+		ship2.transform.getTranslation(tmpV2);
+		for (int i = 0; i < invaders.size(); i++) {
+			Invader invader = invaders.get(i);
+			invader.transform.getTranslation(tmpV1);
+			if (tmpV1.dst(tmpV2) < Ship.SHIP_RADIUS) {
+				ship2.lives--;
+				invaders.remove(invader);
+				ship2.isExploding = true;
+				explosions.add(new Explosion(explosionModel, tmpV1));
+				explosions.add(new Explosion(explosionModel, tmpV2));
+				if (listener != null) listener.explosion();
+				break;
+			}
+		}
+	}
+
 	private void checkBlockCollision () {
 		removedShots.clear();
 
@@ -334,10 +386,10 @@ public class Simulation implements Disposable {
 	public void moveShipLeft (float delta, float scale) {
 		if (ship.isExploding) return;
 
-		float q0 = (float) Invaders.mInvaderInterface.getQ0();
-		float q1 = (float) Invaders.mInvaderInterface.getQ1();
-		float q2 = (float) Invaders.mInvaderInterface.getQ2();
-		float q3 = (float) Invaders.mInvaderInterface.getQ3();
+		float q0 = (float) Invaders.mInvaderInterface1.getQ0();
+		float q1 = (float) Invaders.mInvaderInterface1.getQ1();
+		float q2 = (float) Invaders.mInvaderInterface1.getQ2();
+		float q3 = (float) Invaders.mInvaderInterface1.getQ3();
 
 		ship.transform.trn(-delta * Ship.SHIP_VELOCITY * scale, 0, 0);
 		ship.transform.getTranslation(tmpV1);
@@ -359,10 +411,10 @@ public class Simulation implements Disposable {
 	public void moveShipRight (float delta, float scale) {
 		if (ship.isExploding) return;
 
-		float q0 = (float) Invaders.mInvaderInterface.getQ0();
-		float q1 = (float) Invaders.mInvaderInterface.getQ1();
-		float q2 = (float) Invaders.mInvaderInterface.getQ2();
-		float q3 = (float) Invaders.mInvaderInterface.getQ3();
+		float q0 = (float) Invaders.mInvaderInterface1.getQ0();
+		float q1 = (float) Invaders.mInvaderInterface1.getQ1();
+		float q2 = (float) Invaders.mInvaderInterface1.getQ2();
+		float q3 = (float) Invaders.mInvaderInterface1.getQ3();
 
 		ship.transform.trn(+delta * Ship.SHIP_VELOCITY * scale, 0, 0);
 		if (tmpV1.x > PLAYFIELD_MAX_X) ship.transform.trn(PLAYFIELD_MAX_X - tmpV1.x, 0, 0);
@@ -394,6 +446,7 @@ public class Simulation implements Disposable {
 	@Override
 	public void dispose () {
 		shipModel.dispose();
+		shipModel2.dispose();
 		invaderModel.dispose();
 		blockModel.dispose();
 		shotModel.dispose();

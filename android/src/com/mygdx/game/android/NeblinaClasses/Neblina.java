@@ -76,7 +76,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
     // ***
 
-    //
     // Data port control
     public static final byte DATAPORT_MAX	= 2;	// Max number of data port
 
@@ -950,11 +949,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         if (Enable == true)
         {
-            pkbuf[8] = 1;
+            pkbuf[8] = 0;
         }
         else
         {
-            pkbuf[8] = 0;
+            return;
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);

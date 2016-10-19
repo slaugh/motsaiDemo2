@@ -33,7 +33,8 @@ import com.mygdx.game.screens.MainMenu;
 
 public class Invaders extends Game implements ApplicationListener {
 
-	public static InvaderInterface mInvaderInterface;
+	public static InvaderInterface mInvaderInterface1;
+	public static InvaderInterface mInvaderInterface2;
 
 	/** Music needs to be a class property to prevent being disposed. */
 	private Music music;
@@ -41,12 +42,14 @@ public class Invaders extends Game implements ApplicationListener {
 
 	private Controller controller;
 
-	public Invaders(InvaderInterface invaderInterface) {
-		this.mInvaderInterface = invaderInterface;
+	public Invaders(InvaderInterface invaderInterface1, InvaderInterface invaderInterface2) {
+		this.mInvaderInterface1 = invaderInterface1;
+		this.mInvaderInterface2 = invaderInterface2;
 	}
 
 
 	public interface InvaderInterface {
+		public int shipID = 1;
 		public double getQ0();
 		public double getQ1();
 		public double getQ2();

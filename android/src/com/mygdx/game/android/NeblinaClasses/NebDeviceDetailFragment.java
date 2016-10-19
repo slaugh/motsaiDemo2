@@ -44,6 +44,7 @@ import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_DEBU
 import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_EEPROM;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_MOTION_ENG;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.NEB_CTRL_SUBSYS_STORAGE;
+import static com.mygdx.game.android.NeblinaClasses.Neblina.STORAGE_CMD_ERASE;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.STORAGE_CMD_PLAY;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.STORAGE_CMD_RECORD;
 
@@ -165,6 +166,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             return;
         }
 
+        //Here is where we process the button presses
         switch (cmdList[idx].mSubSysId) {
             case NEB_CTRL_SUBSYS_DEBUG:
                 switch (cmdList[idx].mCmdId)
@@ -184,6 +186,24 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                         break;
                 }
                 break;
+
+            //Respond to Flash Record, and Flash Erase Buttons
+            case NEB_CTRL_SUBSYS_STORAGE:
+                switch (cmdList[idx].mCmdId){
+                    case STORAGE_CMD_RECORD:
+                        if (isChecked)
+                            mNebDev.sessionRecord(true);
+                        else
+                            mNebDev.sessionRecord(false);
+                        break;
+                    case STORAGE_CMD_ERASE:
+                        if (isChecked)
+                            mNebDev.eraseStorage(true);
+                        else
+                            mNebDev.eraseStorage(false);
+                        break;
+                }
+
 
             case NEB_CTRL_SUBSYS_MOTION_ENG:
                 switch (cmdList[idx].mCmdId) {
