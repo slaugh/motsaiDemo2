@@ -123,6 +123,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte MOTION_CMD_ROTATION_INFO		= 0x12;
     public static final byte MOTION_CMD_EXTRN_HEADING_CORR  = 0x13;
 
+    private int deviceNum;
+
     int initializeState = 0;
 
     BluetoothDevice Nebdev;
@@ -141,7 +143,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         return Nebdev.getName() + "_" + Long.toHexString(DevId).toUpperCase();
     }
 
-    public Neblina(long id, BluetoothDevice dev) {
+    public Neblina(long id, BluetoothDevice dev, int num) {
+        deviceNum = num;
         Nebdev = dev;
         DevId = id;
         mDelegate = null;
@@ -249,7 +252,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 mDelegate.didReceiveDebugData(pkt[3], data, datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_MOTION_ENG:// Motion Engine
-                mDelegate.didReceiveFusionData(pkt[3], data, errFlag);
+                mDelegate.didReceiveFusionData(pkt[3], data, errFlag, deviceNum);
                 break;
             case NEB_CTRL_SUBSYS_POWERMGMT:	// Power management
                 mDelegate.didReceivePmgntData(pkt[3], data,  datalen, errFlag);

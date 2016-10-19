@@ -1,12 +1,11 @@
 package com.mygdx.game.android.ControlPanel;
 
+//Android Tools
 import android.Manifest;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,12 +27,15 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+//AWS
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.cognito.CognitoSyncManager;
 import com.amazonaws.mobileconnectors.cognito.DefaultSyncCallback;
 import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+
+//LibGDX
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
 import com.mygdx.game.Invaders;
 import com.mygdx.game.android.NeblinaClasses.AndroidGetQ;
@@ -43,6 +45,7 @@ import com.mygdx.game.android.NeblinaClasses.Neblina;
 import com.mygdx.game.android.NeblinaClasses.Quaternions;
 import com.mygdx.game.android.R;
 
+//Java
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -50,29 +53,39 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//Butterknife
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
 
+
+/*This is the MAIN display class holding:
+    1. The BLE Device Scan List
+    2. A Device detail fragment
+    3. A game fragment
+ */
 public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFragmentApplication.Callbacks{
 
+    //Butterknife get views
     @InjectView(R.id.refreshButton) Button refreshButton;
     @InjectView(R.id.cloudToggleButton) Button toggleButton;
+
     //List Variables
-    private static final int REQUEST_ENABLE_BT = 0;
     private List<String> mDeviceNameList;
     private CustomListAdapter mLeDeviceListAdapter;
-    private static final long SCAN_PERIOD = 60000;
     private static Map<String,Neblina> mDeviceList = new HashMap<String,Neblina>();
     private static Neblina activeDevice;
     private static NebDeviceDetailFragment activeDeviceDelegate;
-    private static boolean mBluetoothGatt;
-    public static boolean debug_mode = true;
+    private static final int REQUEST_ENABLE_BT = 0;
+    private static final long SCAN_PERIOD = 60000;
+
+    //AWS cognito identity
     public String identityID = "";
 
-    //Launch Visualization in a fragment
-    public static AndroidGetQ invaderInterface = new AndroidGetQ();
-    public static AndroidGetQ invaderInterface2 = new AndroidGetQ();
+    //Setup the Quaternion interface
+    public static AndroidGetQ invaderInterface = new AndroidGetQ(1);
+    public static AndroidGetQ invaderInterface2 = new AndroidGetQ(2);
+    private static int numberOfConnectedDevices = 0;
 
     //GATT CALLBACK VARIABLES
     private static final int STATE_DISCONNECTED = 0;
@@ -87,10 +100,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private int mConnectionState = STATE_DISCONNECTED;
     public static final String ACTION_DATA_WRITE = "android.ble.common.ACTION_DATA_WRITE";
 
-    int eepromCounter = 0;
-    public static int playbackNumber = 0;
-
-    //Code Variables
+    //Code Bluetooth Variables
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 8;
@@ -106,19 +116,10 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         setupFragmentAdapters();
         scanLeDevice(true);
 
-        //Activity process:
+        //What this activity does:
         //A. Populate list via mLeScanCallback
         //B. Wait for the user to choose a device
         //C. Trigger onListItemClick to create a NebDeviceDetailFragment based on selection
-    }
-
-    @OnClick(R.id.refreshButton)void setRefreshButton(){
-
-    }
-
-    @OnClick(R.id.cloudToggleButton)void cloudToggle(){
-        ToggleButton toggle = (ToggleButton) findViewById(R.id.cloudToggleButton);
-        Log.w("DEBUG", toggle.isChecked()+"");
     }
 
     public void activateBLE() {
@@ -163,7 +164,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private void setupFragmentAdapters() {
 
         //1. NeblinaDeviceList: Setup the BLE Devices list fragment and its adapter
-        //When a BLE item is clicked, it goes to onListItemClick()
         ListView yourListView = (ListView) findViewById(android.R.id.list);
         mDeviceNameList = new ArrayList<String>(); //Data Source
         mLeDeviceListAdapter = new CustomListAdapter(this, getApplicationContext(),mDeviceNameList);
@@ -173,6 +173,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         activeDeviceDelegate = (NebDeviceDetailFragment) getFragmentManager().findFragmentById(R.id.button_list_fragment);
     }
 
+
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             //stops scanning after a pre-defined period
@@ -180,33 +181,20 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if(debug_mode ==true) {
                         Log.w("BLUETOOTH DEBUG", "ending the scan!");
-                    }
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
                 }
             }, SCAN_PERIOD);
-            if(debug_mode ==true) {
                 Log.w("BLUETOOTH DEBUG", "starting the scan!");
-            }
             mBluetoothAdapter.startLeScan(mLeScanCallback);
         } else {
-            if(debug_mode ==true) {
-                Log.w("BLUETOOTH DEBUG", "ending the scan!");
-            }
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
         }
     }
 
-
     @Override
     public void onRestart(){
         super.onRestart();
-        if(debug_mode ==true) {
-            Log.w("BLUETOOTH_DEBUG", "onRestart!");
-        }
-        if(mConnectionState==STATE_CONNECTED) {
-        }
     }
 
     //Callback function for when a user chooses a BLE device
@@ -214,17 +202,11 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
         //Get the NEBLINA device and setup the NEBLINA interface
         activeDevice = mDeviceList.get(deviceKey);
-        mBluetoothGatt = activeDevice.Connect(getBaseContext());
+        activeDevice.Connect(getBaseContext());
 
         Bundle arguments = new Bundle();
         arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
         activeDeviceDelegate.SetItem(activeDevice);
-//        activeDeviceDelegate.setArguments(arguments);
-//        activeDevice.Connect(getBaseContext());
-
-//        this.getFragmentManager().beginTransaction()
-//                    .add(activeDeviceDelegate, "Fun")
-//                    .commit();
 
         //Tell the user he's connected
         Toast.makeText(this, "Connecting to " + deviceKey, Toast.LENGTH_LONG).show();
@@ -256,7 +238,9 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
                             //Add the device to the list if it isn't there already
                             if(device.getName() != null){
-                                Neblina neblina = new Neblina(deviceID,device);
+
+                                Neblina neblina = new Neblina(deviceID,device,numberOfConnectedDevices+1);
+                                numberOfConnectedDevices++;
                                 if (mDeviceList.containsKey(neblina.toString()) == false) {
                                     mLeDeviceListAdapter.add(neblina.toString());
                                     mLeDeviceListAdapter.notifyDataSetChanged();
@@ -267,56 +251,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                     });
                 }
             };
-
-
-    //BROADCAST WITHOUT CHARACTERISTIC
-    private void broadcastUpdate(final String action) {
-        final Intent intent = new Intent(action);
-        if(debug_mode ==true) {
-            Log.w("BLUETOOTH DEBUG", "You are broadcasting: " + action);
-        }
-        sendBroadcast(intent);
-    }
-
-    //BROADCAST WITH CHARACTERISTIC
-    private void broadcastUpdate(final String action,
-                                 final BluetoothGattCharacteristic characteristic) {
-        final Intent intent = new Intent(action);
-            Log.w("BLUETOOTH DEBUG", "You are in LONG form of onBroadcastUpdate");
-
-            sendBroadcast(intent);
-        }
-
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            final String action = intent.getAction();
-            if (BLEDeviceScanActivity.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnectionState = STATE_CONNECTED;
-                if(debug_mode ==true) {
-                    Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_GATT_CONNECTED");
-                }
-                invalidateOptionsMenu();
-            } else if (BLEDeviceScanActivity.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnectionState = STATE_DISCONNECTED;
-                if(debug_mode ==true) {
-                    Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_GATT_DISCONNECTED");
-                }
-                invalidateOptionsMenu();
-            } else if (BLEDeviceScanActivity.
-                    ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                if(debug_mode ==true) {
-                    Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_GATT_SERVICES_DISCOVERED");
-                }
-            } else if (BLEDeviceScanActivity.ACTION_DATA_AVAILABLE.equals(action)) {
-                if(debug_mode ==true) {
-                    Log.w("BLUETOOTH DEBUG", "The intent action is ACTION_DATA_AVAILABLE");
-                }
-            }
-        }
-    };
 
     public static boolean isInteger(String s, int radix) {
         if(s.isEmpty()) return false;
@@ -417,17 +351,17 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                     Log.w("LogTag", "so basically the problem is here");
                 }
             });
-
-            //READ an object from DynamoDB
-//            final Book selectedBook = mapper.load(Book.class, 001);
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Log.w("LogTag", "Book Value: " + selectedBook.getAuthor());
-//                }
-//            });
             return null;
         }
+    }
+
+    @OnClick(R.id.refreshButton)void setRefreshButton(){
+
+    }
+
+    @OnClick(R.id.cloudToggleButton)void cloudToggle(){
+        ToggleButton toggle = (ToggleButton) findViewById(R.id.cloudToggleButton);
+        Log.w("DEBUG", toggle.isChecked()+"");
     }
 
 
@@ -458,7 +392,4 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     }
 
     }
-
-
-
 

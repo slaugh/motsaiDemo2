@@ -92,6 +92,14 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static float latest_Q1 = 0.0f;
     public static float latest_Q2 = 0.0f;
     public static float latest_Q3 = 0.0f;
+
+    public static float latest_Q0_2 = 0.0f;
+    public static float latest_Q1_2 = 0.0f;
+    public static float latest_Q2_2 = 0.0f;
+    public static float latest_Q3_2 = 0.0f;
+
+
+
     public static String Q0_string = "";
     public static String Q1_string = "";
     public static String Q2_string = "";
@@ -258,7 +266,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public void didReceiveRSSI(int rssi) {
     }
 
-    public void didReceiveFusionData(int type , byte[] data, boolean errFlag) {
+    public void didReceiveFusionData(int type , byte[] data, boolean errFlag,int deviceNum) {
         switch (type) {
             case MOTION_CMD_QUATERNION:
 
@@ -285,17 +293,24 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     final byte[] q3 = Arrays.copyOfRange(data, 14-4, 15-4 + 1); // Bytes 14-15 are Q3 value
                     final byte[] reserved = Arrays.copyOfRange(data, 16-4, 19-4 + 1); // Bytes 16-19 are reserved
 
-                    //Convert to big endian
-                    latest_Q0 = normalizedQ(q0);
-                    latest_Q1 = normalizedQ(q1);
-                    latest_Q2 = normalizedQ(q2);
-                    latest_Q3 = normalizedQ(q3);
+                    if(deviceNum == 1) {
+                        //Convert to big endian
+                        latest_Q0 = normalizedQ(q0);
+                        latest_Q1 = normalizedQ(q1);
+                        latest_Q2 = normalizedQ(q2);
+                        latest_Q3 = normalizedQ(q3);
 
-                    //Create a string version
-                    Q0_string = String.valueOf(latest_Q0);
-                    Q1_string = String.valueOf(latest_Q1);
-                    Q2_string = String.valueOf(latest_Q2);
-                    Q3_string = String.valueOf(latest_Q3);
+                        //Create a string version
+                        Q0_string = String.valueOf(latest_Q0);
+                        Q1_string = String.valueOf(latest_Q1);
+                        Q2_string = String.valueOf(latest_Q2);
+                        Q3_string = String.valueOf(latest_Q3);
+                    }else{
+                        latest_Q0_2 = normalizedQ(q0);
+                        latest_Q1_2 = normalizedQ(q1);
+                        latest_Q2_2 = normalizedQ(q2);
+                        latest_Q3_2 = normalizedQ(q3);
+                    }
 
                     //Merge Note A. Neblina Code
                     final String s1 = String.format(Q0_string+ ", ");

@@ -118,20 +118,31 @@ public class GameLoop extends InvadersScreen implements SimulationListener {
 		float q2 = (float) Invaders.mInvaderInterface1.getQ2();
 		float q3 = (float) Invaders.mInvaderInterface1.getQ3();
 
-		float accelerometerY = Gdx.input.getAccelerometerY();
-//		if (accelerometerY < 0)
-		if (0.2f * (q0 * q1 + q2 * q3)>0) {
-//			simulation.moveShipLeft(delta, Math.abs(accelerometerY) / 10);
-			simulation.moveShipLeft(delta, Math.abs(0.2f * (q0 * q1 + q2 * q3)));
+		float q0_2 = (float) Invaders.mInvaderInterface2.getQ0();
+		float q1_2 = (float) Invaders.mInvaderInterface2.getQ1();
+		float q2_2 = (float) Invaders.mInvaderInterface2.getQ2();
+		float q3_2 = (float) Invaders.mInvaderInterface2.getQ3();
 
+		float accelerometerY = Gdx.input.getAccelerometerY();
+
+		if (0.2f * (q0 * q1 + q2 * q3) > 0) {
+			simulation.moveShipLeft(delta, Math.abs(0.2f * (q0 * q1 + q2 * q3)));
+		} else{
+			simulation.moveShipRight(delta, Math.abs(0.2f * (q0 * q1 + q2 * q3)));
 		}
-		else
-//			simulation.moveShipRight(delta, Math.abs(accelerometerY) / 10);
-			simulation.moveShipRight(delta,Math.abs(0.2f * (q0 * q1 + q2 * q3)));
+
+		if (0.2f * (q0_2 * q1_2 + q2_2 * q3_2)>0) {
+			simulation.moveShipLeft2(delta, Math.abs(0.2f * (q0_2 * q1_2 + q2_2 * q3_2)));
+		}else{
+			simulation.moveShipRight2(delta,Math.abs(0.2f * (q0_2 * q1_2 + q2_2 * q3_2)));
+		}
+
+
 
 		if (invaders.getController() != null) {
 			if (buttonsPressed > 0) {
 				simulation.shot();
+				simulation.shot2();
 			}
 
 			// if the left stick moved, move the ship
@@ -139,15 +150,22 @@ public class GameLoop extends InvadersScreen implements SimulationListener {
 			if (Math.abs(axisValue) > 0.25f) {
 				if (axisValue > 0) {
 					simulation.moveShipRight(delta, axisValue);
+					simulation.moveShipRight2(delta, axisValue);
 				} else {
 					simulation.moveShipLeft(delta, -axisValue);
+					simulation.moveShipLeft2(delta, -axisValue);
 				}
 			}
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT) || Gdx.input.isKeyPressed(Keys.A)) simulation.moveShipLeft(delta, 0.5f);
+		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT) || Gdx.input.isKeyPressed(Keys.A)) simulation.moveShipLeft2(delta, 0.5f);
+
 		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT) || Gdx.input.isKeyPressed(Keys.D)) simulation.moveShipRight(delta, 0.5f);
+		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT) || Gdx.input.isKeyPressed(Keys.D)) simulation.moveShipRight2(delta, 0.5f);
+
 		if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) simulation.shot();
+		if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) simulation.shot2();
 	}
 
 	@Override

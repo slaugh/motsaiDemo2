@@ -56,31 +56,6 @@
             android:screenOrientation="portrait">
         </activity>
 
-        <receiver
-            android:name="com.mygdx.game.android.GattBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.inspirationindustry.motsaibluetooth.ACTION_GATT_CONNECTED">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.inspirationindustry.motsaibluetooth.ACTION_GATT_DISCONNECTED">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.inspirationindustry.motsaibluetooth.ACTION_GATT_SERVICES_DISCOVERED">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.inspirationindustry.motsaibluetooth.ACTION_DATA_AVAILABLE">
-                </action>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="com.inspirationindustry.motsaibluetooth.EXTRA_DATA">
-                </action>
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>

@@ -20,7 +20,7 @@ public interface NeblinaDelegate {
 
     void initializeNeblina();
     void didReceiveRSSI(int rssi);
-    void didReceiveFusionData(int type , byte[] data, boolean errFlag);
+    void didReceiveFusionData(int type , byte[] data, boolean errFlag, int deviceNum);
     void didReceiveDebugData(int type, byte[] data, int datalen, boolean errFlag);
     void didReceivePmgntData(int type, byte[] data, int datalen, boolean errFlag);
     void didReceiveStorageData(int type, byte[] data, int datalen, boolean errFlag);

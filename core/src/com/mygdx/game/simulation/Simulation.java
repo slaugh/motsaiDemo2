@@ -173,7 +173,6 @@ public class Simulation implements Disposable {
 
 		ship.transform.rotate(1, 0, 0, 180);
 		ship2.transform.rotate(1,0,0,180);
-//		ship2.transform.translate(2,2,5);
 
 		for (int row = 0; row < 4; row++) {
 			for (int column = 0; column < 8; column++) {
@@ -397,15 +396,28 @@ public class Simulation implements Disposable {
 
 		Vector3 oldTranslation = ship.transform.getTranslation(tmpV1);
 		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //Used if you want all 3-axis rotation
-//		Quaternion rotateQ = new Quaternion(1,0,0,0); //Used if you only want the roll
 
         ship.transform.setToRotation(0, 0, 0, 0);
         ship.transform.set(oldTranslation, rotateQ);
+	}
 
-//      ROLL-ONLY CODE - BETTER FOR GAME MODE
-//		float roll_x = 57.29578f*((float)(Math.atan2(2*(q0*q1+q2*q3),1-2*(q1*q1+q2*q2))));//Used if you want only roll
-//		ship.transform.rotate(0, 0, 1, roll_x);//Used if you want only roll
-// 		ship.transform.rotate(rotateQ);
+	public void moveShipLeft2 (float delta, float scale) {
+		if (ship.isExploding) return;
+
+		float q0 = (float) Invaders.mInvaderInterface2.getQ0();
+		float q1 = (float) Invaders.mInvaderInterface2.getQ1();
+		float q2 = (float) Invaders.mInvaderInterface2.getQ2();
+		float q3 = (float) Invaders.mInvaderInterface2.getQ3();
+
+		ship2.transform.trn(-delta * Ship.SHIP_VELOCITY * scale, 0, 0);
+		ship2.transform.getTranslation(tmpV1);
+		if (tmpV1.x < PLAYFIELD_MIN_X) ship2.transform.trn(PLAYFIELD_MIN_X - tmpV1.x, 0, 0);
+
+		Vector3 oldTranslation = ship2.transform.getTranslation(tmpV1);
+		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //Used if you want all 3-axis rotation
+
+		ship2.transform.setToRotation(0, 0, 0, 0);
+		ship2.transform.set(oldTranslation, rotateQ);
 	}
 
 	public void moveShipRight (float delta, float scale) {
@@ -418,25 +430,43 @@ public class Simulation implements Disposable {
 
 		ship.transform.trn(+delta * Ship.SHIP_VELOCITY * scale, 0, 0);
 		if (tmpV1.x > PLAYFIELD_MAX_X) ship.transform.trn(PLAYFIELD_MAX_X - tmpV1.x, 0, 0);
-
 		Vector3 oldTranslation = ship.transform.getTranslation(tmpV1);
-
 		Vector3 flip = new Vector3(0,0,0);
-
 		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //For 3-axis
-//		Quaternion rotateQ = new Quaternion(1, 0, 0, 0); //For ROLL-ONLY
-//      ship.transform.set(oldTranslation.mulAdd(flip, -1), rotateQ);//ROLL-ONLY
-//		float roll_x = 57.29578f*((float)(Math.atan2(2*(q0*q1+q2*q3),1-2*(q1*q1+q2*q2))));//ROLL ONLY
-//		ship.transform.rotate(0,0,1,roll_x);//ROLL ONLY
-
-
         ship.transform.setToRotation(0, 0, 0, 0);
         ship.transform.set(oldTranslation.mulAdd(flip, -1), rotateQ);
+	}
+
+	public void moveShipRight2 (float delta, float scale) {
+		if (ship.isExploding) return;
+
+		float q0 = (float) Invaders.mInvaderInterface2.getQ0();
+		float q1 = (float) Invaders.mInvaderInterface2.getQ1();
+		float q2 = (float) Invaders.mInvaderInterface2.getQ2();
+		float q3 = (float) Invaders.mInvaderInterface2.getQ3();
+
+		ship2.transform.trn(+delta * Ship.SHIP_VELOCITY * scale, 0, 0);
+		if (tmpV1.x > PLAYFIELD_MAX_X) ship2.transform.trn(PLAYFIELD_MAX_X - tmpV1.x, 0, 0);
+
+		Vector3 oldTranslation = ship2.transform.getTranslation(tmpV1);
+		Vector3 flip = new Vector3(0,0,0);
+		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //For 3-axis
+		ship2.transform.setToRotation(0, 0, 0, 0);
+		ship2.transform.set(oldTranslation.mulAdd(flip, -1), rotateQ);
 	}
 
 	public void shot () {
 		if (shipShot == null && !ship.isExploding) {
 			ship.transform.getTranslation(tmpV1);
+			shipShot = new Shot(shotModel, tmpV1, false);
+			shots.add(shipShot);
+			if (listener != null) listener.shot();
+		}
+	}
+
+	public void shot2 () {
+		if (shipShot == null && !ship2.isExploding) {
+			ship2.transform.getTranslation(tmpV1);
 			shipShot = new Shot(shotModel, tmpV1, false);
 			shots.add(shipShot);
 			if (listener != null) listener.shot();
