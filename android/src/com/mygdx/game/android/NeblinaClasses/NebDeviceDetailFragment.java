@@ -21,7 +21,10 @@ import com.mygdx.game.android.Adapters.NebCmdItem;
 import com.mygdx.game.android.Adapters.NebListAdapter;
 import com.mygdx.game.android.R;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Queue;
+import java.util.Stack;
 
 import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_DUMP_DATA;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_GET_DATAPORT;
@@ -98,13 +101,12 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static float latest_Q2_2 = 0.0f;
     public static float latest_Q3_2 = 0.0f;
 
-
-
     public static String Q0_string = "";
     public static String Q1_string = "";
     public static String Q2_string = "";
     public static String Q3_string = "";
     public static long timestamp_N =0;
+
 
     //Default Constructor
     public NebDeviceDetailFragment() {
@@ -269,6 +271,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public void didReceiveFusionData(int type , byte[] data, boolean errFlag,int deviceNum) {
         switch (type) {
             case MOTION_CMD_QUATERNION:
+
+
 
                 //Merge Note B. Original Code
                 //Puts the characteristic values into the intent

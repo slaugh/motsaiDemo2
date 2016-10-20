@@ -128,6 +128,7 @@ idea {
 dependencies {
     compile "com.badlogicgames.gdx:gdx-controllers:$gdxVersion"
     compile "com.badlogicgames.gdx:gdx-controllers-android:$gdxVersion"
+    compile "com.androidplot:androidplot-core:0.9.8"
 
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:+'

@@ -17,9 +17,8 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import java.util.List;
+import java.util.Stack;
 import java.util.UUID;
-
-import static com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity.ACTION_DATA_AVAILABLE;
 
 
 /**
@@ -132,7 +131,15 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     BluetoothGatt mBleGatt;
     NeblinaDelegate mDelegate;
     BluetoothGattCharacteristic mCtrlChar;
-//    boolean first_connect = true;
+
+    //Delay Calculation Variables
+    public static int size_max = 100;
+    public static long[] delayTimeStack = new long[size_max];
+    public int file_size = 0;
+    private long currentTime = System.nanoTime();
+    private long delayTime = 0;
+    private long lastTime = System.nanoTime();
+    private boolean isTimeinitializing = true;
 
     public void SetDelegate(NeblinaDelegate neblinaDelegate) {
         mDelegate = neblinaDelegate;
@@ -252,6 +259,22 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 mDelegate.didReceiveDebugData(pkt[3], data, datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_MOTION_ENG:// Motion Engine
+
+//                currentTime = System.nanoTime();  //Requires about 100 clock cycles
+                currentTime = System.currentTimeMillis(); //Requires about 5 clock cycles
+                delayTime = currentTime - lastTime;
+
+                if(isTimeinitializing!=true) {
+                    if(file_size < size_max){
+                        delayTimeStack[file_size]=delayTime;
+                        file_size++;
+                    }
+                } else {
+                    isTimeinitializing = false;
+                }
+                lastTime = currentTime;
+
+
                 mDelegate.didReceiveFusionData(pkt[3], data, errFlag, deviceNum);
                 break;
             case NEB_CTRL_SUBSYS_POWERMGMT:	// Power management
