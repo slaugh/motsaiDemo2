@@ -124,6 +124,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
         super.onCreate(savedInstanceState);
     }
 
+
+    //Here we setup the list of Buttons
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -153,9 +155,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                 if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE) {
 
                     if (mNebDev != null) {
-                        mNebDev.getMotionStatus();
-                        mNebDev.getDataPortState();
-                        mNebDev.getLed();
+                        mNebDev.initializeState=2;
                         mNebDev.getFirmwareVersion();
                     }
                 }
@@ -169,6 +169,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
         return rootView;
     }
 
+    //Here we process button presses
     public void onSwitchButtonChanged(CompoundButton button, boolean isChecked) {
         int idx = (int) button.getTag();
         if (idx < 0 && idx > cmdList.length){
@@ -241,39 +242,12 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
         }
     }
 
-    public int getCmdIdx(int subsysId, int cmdId) {
-        for (int i = 0; i < cmdList.length; i++) {
-            if (cmdList[i].mSubSysId == subsysId && cmdList[i].mCmdId == cmdId) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public void initializeNeblina() {
-        //Get device states
-        didConnectNeblina();
-
-        //By default start streaming quaternions
-        mNebDev.streamQuaternion(true);
-    }
-
-    public void didConnectNeblina() {
-        mNebDev.getFirmwareVersion();
-        mNebDev.getMotionStatus();
-        mNebDev.getDataPortState();
-        mNebDev.getLed();
-    }
-
     public void didReceiveRSSI(int rssi) {
     }
 
     public void didReceiveFusionData(int type , byte[] data, boolean errFlag,int deviceNum) {
         switch (type) {
             case MOTION_CMD_QUATERNION:
-
-
-
                 //Merge Note B. Original Code
                 //Puts the characteristic values into the intent
                 if (data != null && data.length > 0) {
@@ -561,7 +535,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                 }
                 break;
         }
-
     }
     public void didReceivePmgntData(int type, byte[] data, int dataLen, boolean errFlag) {
 
@@ -574,6 +547,16 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     }
     public void didReceiveLedData(int type, byte[] data, int dataLen, boolean errFlag) {
 
+        Log.w("BLUETOOTH DEBUG", "DID RECEIVE LED DATA");
     }
 
+    //Helper function
+    public int getCmdIdx(int subsysId, int cmdId) {
+        for (int i = 0; i < cmdList.length; i++) {
+            if (cmdList[i].mSubSysId == subsysId && cmdList[i].mCmdId == cmdId) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }

@@ -17,7 +17,6 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import java.util.List;
-import java.util.Stack;
 import java.util.UUID;
 
 
@@ -53,7 +52,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte NEB_CTRL_SUBSYS_STORAGE    = 0x0B;		//NOR flash memory recorder
     public static final byte NEB_CTRL_SUBSYS_EEPROM		= 0x0C;		//small EEPROM storage
 
-
     // ***
     // Power management subsystem command code
     public static final byte POWERMGMT_CMD_GET_BAT_LEVEL		= 0;	// Get battery level
@@ -72,7 +70,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte DEBUG_CMD_STREAM_RSSI						= 7;	// get the BLE signal strength in db
     public static final byte DEBUG_CMD_GET_DATAPORT						= 8;	// Get streaming data interface port state.
     public static final byte DEBUG_CMD_SET_DATAPORT						= 9;	// Enable/Disable streaming data interface port
-
     // ***
 
     // Data port control
@@ -132,14 +129,26 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     NeblinaDelegate mDelegate;
     BluetoothGattCharacteristic mCtrlChar;
 
-    //Delay Calculation Variables
-    public static int size_max = 10000;
-    public static long[] delayTimeStack = new long[size_max];
-    public int file_size = 0;
-    private long currentTime = System.nanoTime();
+    // Delay Calculation Variables //
+    public static int size_max = 100;
+
+    // Packet Interval Variables //
+    public static long[] delayTimeArray = new long[size_max];
+    public int file_size1 = 0;
+    private long currentTime = System.currentTimeMillis();
     private long delayTime = 0;
-    private long lastTime = System.nanoTime();
+    private long lastTime = System.currentTimeMillis();
     private boolean isTimeinitializing = true;
+
+    //Round Trip Variables
+    public static long[] roundTripTimeArray = new long[size_max];
+    public int file_size2 = 0;
+    private long sentTime = System.currentTimeMillis();
+    private long returnTime = System.currentTimeMillis();
+    private long writeDescriptorTimestamp;
+    private long writeDelay;
+    private long onDescWriteTime;
+
 
     public void SetDelegate(NeblinaDelegate neblinaDelegate) {
         mDelegate = neblinaDelegate;
@@ -209,18 +218,74 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             BluetoothGattDescriptor descriptor = descriptors.get(0);
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBleGatt.writeDescriptor(descriptor);
+            writeDescriptorTimestamp = System.currentTimeMillis();
         }
     }
-
 
     //This is called as a confirmation of setting CharacteristicNotifications
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status){
-        if(initializeState==0){
-            Log.w("BLUETOOTH DEBUG", "onDescriptorWRITE was called");
-            mDelegate.initializeNeblina();
-            initializeState = 1;
+        onDescWriteTime = System.currentTimeMillis();
+        writeDelay = onDescWriteTime - writeDescriptorTimestamp;
+        Log.w("BLUETOOTH DEBUG", "Write Delay is: " + writeDelay);
+        switch (initializeState){
+            case 0:
+                streamQuaternion(true);
+                initializeState++;
+                break;
+            case 1:
+                getFirmwareVersion();
+                initializeState++;
+                break;
+            case 2:
+                getMotionStatus();
+                initializeState++;
+                break;
+            case 3:
+                getDataPortState();
+                initializeState++;
+                break;
+            case 4:
+                getLed();
+                initializeState++;
+                break;
+            default:
+                break;
         }
+    }
+
+    @Override
+    public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
+        switch (initializeState){
+            case 0:
+                streamQuaternion(true);
+                initializeState++;
+                break;
+            case 1:
+                getFirmwareVersion();
+                initializeState++;
+                break;
+            case 2:
+                getMotionStatus();
+                initializeState++;
+                break;
+            case 3:
+                getDataPortState();
+                initializeState++;
+                break;
+            case 4:
+                getLed();
+                initializeState++;
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onCharacteristicRead (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
+        Log.w("BLUETOOTH_DEBUG","OnCharacteristicRead! :D");
+        
     }
 
 
@@ -265,9 +330,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 delayTime = currentTime - lastTime;
 
                 if(isTimeinitializing!=true) {
-                    if(file_size < size_max){
-                        delayTimeStack[file_size]=delayTime;
-                        file_size++;
+                    if(file_size1 < size_max){
+                        delayTimeArray[file_size1]=delayTime;
+                        file_size1++;
                     }
                 } else {
                     isTimeinitializing = false;
@@ -281,6 +346,15 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 mDelegate.didReceivePmgntData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_LED:		// LED control
+
+                returnTime = System.currentTimeMillis();
+                Log.w("BLUETOOTH DEBUG", "LED STATE RETURNED");
+                if(file_size2 < size_max){
+                    roundTripTimeArray[file_size2] = returnTime - sentTime;
+                    file_size2++;
+                }
+//                getLed();
+
                 mDelegate.didReceiveLedData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_STORAGE:	//NOR flash memory recorder
@@ -306,8 +380,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         pkbuf[2] = 0;
         pkbuf[3] = DEBUG_CMD_GET_DATAPORT;	// Cmd
 
-        mCtrlChar.setValue(pkbuf); //writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
-        mBleGatt.writeCharacteristic(mCtrlChar);
+        mCtrlChar.setValue(pkbuf);
+        boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG", "Writing Motion Status: " + success);
     }
 
     public void getFirmwareVersion() {
@@ -322,8 +397,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         pkbuf[2] = 0;
         pkbuf[3] = DEBUG_CMD_GET_FW_VERSION;	// Cmd
 
-        mCtrlChar.setValue(pkbuf);//device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
-        mBleGatt.writeCharacteristic(mCtrlChar);
+        mCtrlChar.setValue(pkbuf);
+        boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG", "Writing Version Number: " + success);
     }
 
     public void getMotionStatus() {
@@ -338,9 +414,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         pkbuf[2] = 0;
         pkbuf[3] = DEBUG_CMD_MOTENGINE_RECORDER_STATUS;	// Cmd
 
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
         mCtrlChar.setValue(pkbuf);
-        mBleGatt.writeCharacteristic(mCtrlChar);
+        boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG", "Writing Motion Status: " + success);
     }
 
     public void getRecorderStatus() {
@@ -356,7 +432,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         pkbuf[3] = DEBUG_CMD_MOTENGINE_RECORDER_STATUS;	// Cmd
 
         mCtrlChar.setValue(pkbuf);
-        mBleGatt.writeCharacteristic(mCtrlChar);
+        boolean isWriteSuccessful = mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG", "Writing Recorder Status: " + isWriteSuccessful);
         //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
@@ -452,6 +529,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     // *** LED subsystem commands
     public void getLed() {
         if (isDeviceReady() == false) {
+            Log.w("BLUETOOTH DEBUG", "DEVICE NOT READY! NO LED READINGS :(");
             return;
         }
 
@@ -463,9 +541,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         pkbuf[3] = LED_CMD_GET_VALUE;	// Cmd
 
         mCtrlChar.setValue(pkbuf);
-        mBleGatt.writeCharacteristic(mCtrlChar);
-        Log.w("BLUETOOTH DEBUG", "GET LED STATE");
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
+
+        sentTime = System.currentTimeMillis();
+
+        boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH DEBUG", "Writing GET LED state: " + success);
     }
 
     public void setLed(byte LedNo, byte Value) {
@@ -769,7 +849,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
     public void streamQuaternion(boolean Enable)
     {
-        Log.w("BLUETOOTH DEBUG", "streamingQuaternions!" + Enable );
         if (isDeviceReady() == false) {
             Log.w("BLUETOOTH DEBUG", "Device is not ready!" + Enable );
             return;
@@ -791,9 +870,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             pkbuf[8] = 0;
         }
         mCtrlChar.setValue(pkbuf);
-        mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
+        boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
+        Log.w("BLUETOOTH_DEBUG","Write Stream Quaternions: " + success);
     }
 
     public void streamRotationInfo(boolean Enable) {
@@ -1055,6 +1133,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void writeToParcel(Parcel out, int flags) {
         out.writeValue(Nebdev);
         out.writeLong(DevId);
+//        out.writeValue(mBleGatt);
+//        out.writeValue(mDelegate);
+//        out.writeValue(mCtrlChar);
     }
 
     public static final Parcelable.Creator<Neblina> CREATOR
@@ -1062,13 +1143,27 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         public Neblina createFromParcel(Parcel in) {
             return new Neblina(in);
         }
-
         public Neblina[] newArray(int size) {
             return new Neblina[size];
         }
     };
+
     private Neblina(Parcel in) {
         Nebdev = (BluetoothDevice) in.readValue(null);
         DevId = in.readLong();
+//        mBleGatt = (BluetoothGatt) in.readValue(null);
+//        mDelegate = (NeblinaDelegate) in.readValue(null);
+//        mCtrlChar = (BluetoothGattCharacteristic) in.readValue(null);
+    }
+
+    //Get initial state information and turn on Quaternions
+    public void initializeNeblina() {
+        //Get device states
+        getFirmwareVersion();
+        getMotionStatus();
+        getDataPortState();
+        getLed();
+        //By default start streaming quaternions
+        streamQuaternion(true);
     }
 }

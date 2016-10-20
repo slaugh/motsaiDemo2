@@ -60,8 +60,11 @@
         </activity>
         <activity
             android:name=".ControlPanel.BLEDeviceScanActivity"
-            android:screenOrientation="portrait"></activity>
-        <activity android:name=".ControlPanel.DisplayActivity"></activity>
+            android:screenOrientation="portrait" />
+        <activity android:name=".ControlPanel.DisplayActivity" />
+        <activity
+            android:name=".ControlPanel.RoundTripGraphs"
+            android:label="@string/title_activity_round_trip_graphs"></activity>
     </application>
 
 </manifest>

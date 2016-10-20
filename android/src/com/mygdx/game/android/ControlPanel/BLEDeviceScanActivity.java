@@ -25,7 +25,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 //AWS
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -46,9 +45,6 @@ import com.mygdx.game.android.NeblinaClasses.Quaternions;
 import com.mygdx.game.android.R;
 
 //Java
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -60,9 +56,6 @@ import java.util.Map;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
-
-import static android.content.Context.MODE_WORLD_READABLE;
-
 
 /*This is the MAIN display class holding:
     1. The BLE Device Scan List
@@ -361,7 +354,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     }
 
     @OnClick(R.id.refreshButton)void setRefreshButton(){
-
+        scanLeDevice(true);
     }
 
     @OnClick(R.id.cloudToggleButton)void cloudToggle() {

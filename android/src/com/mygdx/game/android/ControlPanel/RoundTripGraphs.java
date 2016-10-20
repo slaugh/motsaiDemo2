@@ -1,10 +1,7 @@
 package com.mygdx.game.android.ControlPanel;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
+import android.app.Activity;
 
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
@@ -16,14 +13,7 @@ import com.mygdx.game.android.R;
 
 import java.util.Arrays;
 
-import butterknife.ButterKnife;
-import butterknife.InjectView;
-import butterknife.OnClick;
-
-public class DisplayActivity extends Activity {
-
-    @InjectView(R.id.next_graph)
-    Button nextButton;
+public class RoundTripGraphs extends Activity {
 
     private XYPlot plot;
     private XYPlot histogram;
@@ -32,20 +22,19 @@ public class DisplayActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_display);
-        ButterKnife.inject(this);
+        setContentView(R.layout.activity_round_trip_graphs);
 
         // initialize our XYPlot reference:
-        plot = (XYPlot) findViewById(R.id.plot);
-        histogram = (XYPlot) findViewById(R.id.histogram);
+        plot = (XYPlot) findViewById(R.id.round_trip_plot);
+        histogram = (XYPlot) findViewById(R.id.round_trip_histogram);
 
         long max_value = 0;
 
         // create a couple arrays of y-values to plot:
         Number[] series1Numbers = new Number[Neblina.size_max];
         for(int i =0;i<Neblina.size_max;i++){
-            series1Numbers[i] = Neblina.delayTimeArray[i];
-            if (Neblina.delayTimeArray[i] > max_value) max_value = Neblina.delayTimeArray[i];
+            series1Numbers[i] = Neblina.roundTripTimeArray[i];
+            if (Neblina.roundTripTimeArray[i] > max_value) max_value = Neblina.roundTripTimeArray[i];
         }
 
         //initialize the histogramSeries
@@ -59,7 +48,7 @@ public class DisplayActivity extends Activity {
 
         for(int i=0; i<Neblina.size_max;i++){
             double highValue = (double) max_value;
-            double value = (double) Neblina.delayTimeArray[i];
+            double value = (double) Neblina.roundTripTimeArray[i];
             int bin = (int) Math.floor((value / highValue)*(histogramSizeMax-1));
             histogramSeriesNumbers[bin] = histogramSeriesNumbers[bin].intValue() +1;
         }
@@ -100,13 +89,6 @@ public class DisplayActivity extends Activity {
 
         // rotate domain labels 45 degrees to make them more compact horizontally:
         plot.getGraphWidget().setDomainLabelOrientation(-45);
-
     }
 
-    @OnClick(R.id.next_graph)void nextGraph() {
-        Log.w("DEBUG", "Next Graph Button Bressed");
-
-        Intent intent = new Intent(this, RoundTripGraphs.class);
-        startActivity(intent);
-    }
 }
