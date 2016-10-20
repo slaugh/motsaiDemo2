@@ -133,7 +133,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     BluetoothGattCharacteristic mCtrlChar;
 
     //Delay Calculation Variables
-    public static int size_max = 100;
+    public static int size_max = 10000;
     public static long[] delayTimeStack = new long[size_max];
     public int file_size = 0;
     private long currentTime = System.nanoTime();
