@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.mygdx.game.android.Adapters.NebCmdItem;
 import com.mygdx.game.android.Adapters.NebListAdapter;
+import com.mygdx.game.android.ControlPanel.DynamicData;
 import com.mygdx.game.android.R;
 
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     private Neblina mNebDev;
 
+//    public static DynamicData dynamicData;
     /**
      * The fragment argument representing the item ID that this fragment
      * represents.
@@ -283,6 +285,12 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                         Q1_string = String.valueOf(latest_Q1);
                         Q2_string = String.valueOf(latest_Q2);
                         Q3_string = String.valueOf(latest_Q3);
+
+                        //Activate the Dynamic View if initialized
+//                        if(dynamicData!=null){
+//                            dynamicData.onSensorChanged(latest_Q0);
+//                        }
+
                     }else{
                         latest_Q0_2 = normalizedQ(q0);
                         latest_Q1_2 = normalizedQ(q1);
@@ -315,28 +323,28 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                 break;
 
             case MOTION_CMD_DOWN_SAMPLE:
-                Log.w("DEBUG", "COMMAND: MOTION_CMD_DOWN_SAMPLE");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_DOWN_SAMPLE");
                 break;
             case MOTION_CMD_MOTION_STATE:
-                Log.w("DEBUG", "COMMAND: MOTION_CMD_MOTION_STATE");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_MOTION_STATE");
                 break;
             case MOTION_CMD_IMU_DATA:
-                Log.w("DEBUG", "COMMAND: MOTION_CMD_IMU_DATA");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_IMU_DATA");
                 break;
             case MOTION_CMD_EULER_ANGLE:
-                Log.w("DEBUG", "COMMAND: MOTION_CMD_EULER_ANGLE");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_EULER_ANGLE");
                 break;
             case MOTION_CMD_EXTFORCE:
-                Log.w("DEBUG", "COMMAND: MOTION_CMD_EXTFORCE");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_EXTFORCE");
                 break;
             case MOTION_CMD_SET_FUSION_TYPE:
-                Log.w("DEBUG", "COMMAND: MOTION_CMD_SET_FUSION_TYPE");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_SET_FUSION_TYPE");
                 break;
             case MOTION_CMD_TRAJECTORY_RECORD:
-                Log.w("DEBUG", "COMMAND: MOTION_CMD_TRAJECTORY_RECORD");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_TRAJECTORY_RECORD");
                 break;
             default:
-                Log.w("DEBUG", "COMMAND CODE NOT RECOGNIZED");
+                Log.w("BLUETOOTH_DEBUG", "COMMAND CODE NOT RECOGNIZED");
 
     }
     }

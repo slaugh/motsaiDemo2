@@ -45,6 +45,7 @@ public class DisplayActivity extends Activity {
         Number[] series1Numbers = new Number[Neblina.size_max];
         for(int i =0;i<Neblina.size_max;i++){
             series1Numbers[i] = Neblina.delayTimeArray[i];
+            if(i==0) series1Numbers[i] = 0;
             if (Neblina.delayTimeArray[i] > max_value) max_value = Neblina.delayTimeArray[i];
         }
 

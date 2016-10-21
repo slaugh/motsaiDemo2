@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_dynamic_data"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.mygdx.game.android.ControlPanel.DynamicData">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/aprLevelsPlot"
+            android:background="@drawable/bg_gradient">
+        <CheckBox android:id="@+id/hwAccelerationCb"
+            android:visibility="gone"
+            android:text="HW Acceleration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <CheckBox android:id="@+id/showFpsCb"
+            android:text="Show FPS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:text="Future Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/future_button"
+                android:layout_weight="1"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true" />
+
+            <com.androidplot.xy.XYPlot
+                android:id="@+id/aprHistoryPlot"
+                android:layout_width="fill_parent"
+                android:layout_weight="1"
+                android:layout_marginLeft="10px"
+                android:layout_marginRight="10px"
+                title="A/P/R History"
+                android:layout_height="500dp"
+                android:layout_alignParentEnd="true"
+                android:layout_above="@+id/future_button" />
+
+            <com.androidplot.xy.XYPlot
+                android:id="@+id/aprLevelsPlot"
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:layout_marginLeft="10px"
+                android:layout_marginRight="10px"
+                title="A/P/R Levels"
+                android:layout_above="@+id/aprHistoryPlot"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/linearLayout3" />
+        </RelativeLayout>
+    </LinearLayout>
+
+</RelativeLayout>

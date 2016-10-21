@@ -20,4 +20,5 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_open_gl">OpenGlActivity</string>
     <string name="title_activity_round_trip_graphs">RoundTripGraphs</string>
+    <string name="title_activity_dynamic_data">DynamicData</string>
 </resources>

@@ -1,7 +1,10 @@
 package com.mygdx.game.android.ControlPanel;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
+import android.util.Log;
+import android.widget.Button;
 
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
@@ -13,7 +16,14 @@ import com.mygdx.game.android.R;
 
 import java.util.Arrays;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
+
 public class RoundTripGraphs extends Activity {
+
+    @InjectView(R.id.to_dynamic_button)
+    Button toDynamicButton;
 
     private XYPlot plot;
     private XYPlot histogram;
@@ -23,6 +33,7 @@ public class RoundTripGraphs extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_round_trip_graphs);
+        ButterKnife.inject(this);
 
         // initialize our XYPlot reference:
         plot = (XYPlot) findViewById(R.id.round_trip_plot);
@@ -91,4 +102,10 @@ public class RoundTripGraphs extends Activity {
         plot.getGraphWidget().setDomainLabelOrientation(-45);
     }
 
+
+    @OnClick(R.id.to_dynamic_button)void dynamicButtonPressed() {
+        Log.w("DEBUG", "To Dynamic Data Button Pressed");
+//        Intent intent = new Intent(this, DynamicData.class);
+//        startActivity(intent);
+    }
 }

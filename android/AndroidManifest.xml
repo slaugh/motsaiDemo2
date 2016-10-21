@@ -64,7 +64,10 @@
         <activity android:name=".ControlPanel.DisplayActivity" />
         <activity
             android:name=".ControlPanel.RoundTripGraphs"
-            android:label="@string/title_activity_round_trip_graphs"></activity>
+            android:label="@string/title_activity_round_trip_graphs" />
+        <activity
+            android:name=".ControlPanel.DynamicData"
+            android:label="@string/title_activity_dynamic_data"></activity>
     </application>
 
 </manifest>

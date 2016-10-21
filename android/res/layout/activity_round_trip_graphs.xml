@@ -20,8 +20,8 @@
         ap:label="A Simple XY Plot"
         ap:rangeLabel="range"
         ap:domainLabel="domain"
-        android:layout_above="@+id/next_graph"
-        android:layout_below="@+id/round_trip_histogram" />
+        android:layout_below="@+id/round_trip_histogram"
+        android:layout_above="@+id/to_dynamic_button" />
 
     <com.androidplot.xy.XYPlot
         style="@style/APDefacto.Dark"
@@ -32,5 +32,13 @@
         ap:domainLabel="domain"
         android:layout_below="@+id/histogram"
         android:layout_height="500dp" />
+
+    <Button
+        android:text="Dynamic Graph"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/to_dynamic_button"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
