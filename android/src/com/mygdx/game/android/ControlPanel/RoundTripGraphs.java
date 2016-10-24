@@ -105,7 +105,7 @@ public class RoundTripGraphs extends Activity {
 
     @OnClick(R.id.to_dynamic_button)void dynamicButtonPressed() {
         Log.w("DEBUG", "To Dynamic Data Button Pressed");
-//        Intent intent = new Intent(this, DynamicData.class);
-//        startActivity(intent);
+        Intent intent = new Intent(this, DynamicData.class);
+        startActivity(intent);
     }
 }

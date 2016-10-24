@@ -42,21 +42,24 @@ public class Simulation implements Disposable {
 	public final static float PLAYFIELD_MAX_X = 14;
 	public final static float PLAYFIELD_MIN_Z = -15;
 	public final static float PLAYFIELD_MAX_Z = 2;
+	public final static int MAX_SHIPS = 2;
 
 	public ArrayList<Invader> invaders = new ArrayList<Invader>();
 	public ArrayList<Block> blocks = new ArrayList<Block>();
 	public ArrayList<Shot> shots = new ArrayList<Shot>();
 	public ArrayList<Explosion> explosions = new ArrayList<Explosion>();
-	public Ship ship;
-	public Ship ship2;
+	public Ship[] ships = new Ship[MAX_SHIPS];
+//	public Ship ship;
+//	public Ship ship2;
 	public Shot shipShot = null;
 	public transient SimulationListener listener;
 	public float multiplier = 1;
 	public int score;
 	public int wave = 1;
 
-	public Model shipModel;
-	public Model shipModel2;
+	public Model[] shipModels = new Model[MAX_SHIPS];
+//	public Model shipModel;
+//	public Model shipModel2;
 	public Model invaderModel;
 	public Model blockModel;
 	public Model shotModel;
@@ -74,8 +77,8 @@ public class Simulation implements Disposable {
 
 	private void populate () {
 		ObjLoader objLoader = new ObjLoader();
-		shipModel = objLoader.loadModel(Gdx.files.internal("data/ship.obj"));
-		shipModel2 = objLoader.loadModel(Gdx.files.internal("data/ship.obj"));
+
+		for(int i = 0; i < MAX_SHIPS; i++){shipModels[i] = objLoader.loadModel(Gdx.files.internal("data/ship.obj"));}
 		invaderModel = objLoader.loadModel(Gdx.files.internal("data/invader.obj"));
 		blockModel = objLoader.loadModel(Gdx.files.internal("data/block.obj"));
 		shotModel = objLoader.loadModel(Gdx.files.internal("data/shot.obj"));
@@ -86,8 +89,8 @@ public class Simulation implements Disposable {
 		shipTexture2.setFilter(TextureFilter.MipMap, TextureFilter.Linear);
 		final Texture invaderTexture = new Texture(Gdx.files.internal("data/invader.png"), Format.RGB565, true);
 		invaderTexture.setFilter(TextureFilter.MipMap, TextureFilter.Linear);
-		shipModel.materials.get(0).set(TextureAttribute.createDiffuse(shipTexture));
-		shipModel2.materials.get(0).set(TextureAttribute.createDiffuse(shipTexture2));
+
+		for(int i = 0; i < MAX_SHIPS; i++){ shipModels[i].materials.get(0).set(TextureAttribute.createDiffuse(shipTexture));}
 		invaderModel.materials.get(0).set(TextureAttribute.createDiffuse(invaderTexture));
 
 		((ColorAttribute)blockModel.materials.get(0).get(ColorAttribute.Diffuse)).color.set(0, 0, 1, 0.5f);
@@ -168,11 +171,10 @@ public class Simulation implements Disposable {
 		explosionModel.meshParts.add(meshPart);
 		explosionModel.manageDisposable(explosionMesh);
 
-		ship = new Ship(shipModel);
-		ship2 = new Ship(shipModel2);
-
-		ship.transform.rotate(1, 0, 0, 180);
-		ship2.transform.rotate(1,0,0,180);
+		for (int i = 0; i < MAX_SHIPS; i++){
+			ships[i] = new Ship(shipModels[i]);
+			ships[i].transform.rotate(1, 0, 0, 180);
+		}
 
 		for (int row = 0; row < 4; row++) {
 			for (int column = 0; column < 8; column++) {
@@ -191,13 +193,16 @@ public class Simulation implements Disposable {
 	}
 
 	public void update (float delta) {
-		ship.update(delta);
-		ship2.update(delta);
+
+		for(int i=0; i<MAX_SHIPS; i++){
+			ships[i].update(delta);
+		}
+//		ship.update(delta);
+//		ship2.update(delta);
 		updateInvaders(delta);
 		updateShots(delta);
 		updateExplosions(delta);
-		checkShipCollision();
-		checkShipCollision2();
+		checkShipCollisions();
 		checkInvaderCollision();
 		checkBlockCollision();
 		checkNextLevel();
@@ -263,82 +268,44 @@ public class Simulation implements Disposable {
 		}
 	}
 
-	private void checkShipCollision () {
+	private void checkShipCollisions() {
 		removedShots.clear();
 
-		if (!ship.isExploding) {
-			ship.transform.getTranslation(tmpV1);
-			for (int i = 0; i < shots.size(); i++) {
-				Shot shot = shots.get(i);
-				if (!shot.isInvaderShot) continue;
-				shot.transform.getTranslation(tmpV2);
+		for (int shipNumber =0; shipNumber< MAX_SHIPS; shipNumber++) {
+			if (!ships[shipNumber].isExploding) {
+				ships[shipNumber].transform.getTranslation(tmpV1);
+				for (int i = 0; i < shots.size(); i++) {
+					Shot shot = shots.get(i);
+					if (!shot.isInvaderShot) continue;
+					shot.transform.getTranslation(tmpV2);
+					if (tmpV1.dst(tmpV2) < Ship.SHIP_RADIUS) {
+						removedShots.add(shot);
+						shot.hasLeftField = true;
+						ships[shipNumber].lives--;
+						ships[shipNumber].isExploding = true;
+						explosions.add(new Explosion(explosionModel, tmpV1));
+						if (listener != null) listener.explosion();
+						break;
+					}
+				}
+
+				for (int i = 0; i < removedShots.size(); i++)
+					shots.remove(removedShots.get(i));
+			}
+
+			ships[shipNumber].transform.getTranslation(tmpV2);
+			for (int i = 0; i < invaders.size(); i++) {
+				Invader invader = invaders.get(i);
+				invader.transform.getTranslation(tmpV1);
 				if (tmpV1.dst(tmpV2) < Ship.SHIP_RADIUS) {
-					removedShots.add(shot);
-					shot.hasLeftField = true;
-					ship.lives--;
-					ship.isExploding = true;
+					ships[shipNumber].lives--;
+					invaders.remove(invader);
+					ships[shipNumber].isExploding = true;
 					explosions.add(new Explosion(explosionModel, tmpV1));
+					explosions.add(new Explosion(explosionModel, tmpV2));
 					if (listener != null) listener.explosion();
 					break;
 				}
-			}
-
-			for (int i = 0; i < removedShots.size(); i++)
-				shots.remove(removedShots.get(i));
-		}
-
-		ship.transform.getTranslation(tmpV2);
-		for (int i = 0; i < invaders.size(); i++) {
-			Invader invader = invaders.get(i);
-			invader.transform.getTranslation(tmpV1);
-			if (tmpV1.dst(tmpV2) < Ship.SHIP_RADIUS) {
-				ship.lives--;
-				invaders.remove(invader);
-				ship.isExploding = true;
-				explosions.add(new Explosion(explosionModel, tmpV1));
-				explosions.add(new Explosion(explosionModel, tmpV2));
-				if (listener != null) listener.explosion();
-				break;
-			}
-		}
-	}
-
-	private void checkShipCollision2 () {
-		removedShots.clear();
-
-		if (!ship2.isExploding) {
-			ship2.transform.getTranslation(tmpV1);
-			for (int i = 0; i < shots.size(); i++) {
-				Shot shot = shots.get(i);
-				if (!shot.isInvaderShot) continue;
-				shot.transform.getTranslation(tmpV2);
-				if (tmpV1.dst(tmpV2) < Ship.SHIP_RADIUS) {
-					removedShots.add(shot);
-					shot.hasLeftField = true;
-					ship2.lives--;
-					ship2.isExploding = true;
-					explosions.add(new Explosion(explosionModel, tmpV1));
-					if (listener != null) listener.explosion();
-					break;
-				}
-			}
-
-			for (int i = 0; i < removedShots.size(); i++)
-				shots.remove(removedShots.get(i));
-		}
-
-		ship2.transform.getTranslation(tmpV2);
-		for (int i = 0; i < invaders.size(); i++) {
-			Invader invader = invaders.get(i);
-			invader.transform.getTranslation(tmpV1);
-			if (tmpV1.dst(tmpV2) < Ship.SHIP_RADIUS) {
-				ship2.lives--;
-				invaders.remove(invader);
-				ship2.isExploding = true;
-				explosions.add(new Explosion(explosionModel, tmpV1));
-				explosions.add(new Explosion(explosionModel, tmpV2));
-				if (listener != null) listener.explosion();
-				break;
 			}
 		}
 	}
@@ -367,116 +334,75 @@ public class Simulation implements Disposable {
 	}
 
 	private void checkNextLevel () {
-		if (invaders.size() == 0 && ship.lives > 0) {
+		if (invaders.size() == 0 && ships[0].lives > 0) {
 			blocks.clear();
 			shots.clear();
 			shipShot = null;
-			ship.transform.getTranslation(tmpV1);
+			ships[0].transform.getTranslation(tmpV1); //TODO: Will this affect movement???
 
-			int lives = ship.lives;
+			int lives = ships[0].lives;
 			populate();
-			ship.transform.setTranslation(tmpV1);
-			ship.lives = lives;
+			ships[0].transform.setTranslation(tmpV1); //TODO: Will this affect movement???
+			ships[0].lives = lives;
 			multiplier += 0.2f;
 			wave++;
 		}
 	}
 
-	public void moveShipLeft (float delta, float scale) {
-		if (ship.isExploding) return;
+	public void moveShipLeft(float delta, float scale, int shipNumber) {
+			if (ships[shipNumber].isExploding) return;
 
-		float q0 = (float) Invaders.mInvaderInterface1.getQ0();
-		float q1 = (float) Invaders.mInvaderInterface1.getQ1();
-		float q2 = (float) Invaders.mInvaderInterface1.getQ2();
-		float q3 = (float) Invaders.mInvaderInterface1.getQ3();
+			float q0 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ0();
+			float q1 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ1();
+			float q2 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ2();
+			float q3 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ3();
 
-		ship.transform.trn(-delta * Ship.SHIP_VELOCITY * scale, 0, 0);
-		ship.transform.getTranslation(tmpV1);
-		if (tmpV1.x < PLAYFIELD_MIN_X) ship.transform.trn(PLAYFIELD_MIN_X - tmpV1.x, 0, 0);
+			ships[0].transform.trn(-delta * Ship.SHIP_VELOCITY * scale, 0, 0);
+			ships[0].transform.getTranslation(tmpV1);
+			if (tmpV1.x < PLAYFIELD_MIN_X) ships[0].transform.trn(PLAYFIELD_MIN_X - tmpV1.x, 0, 0);
 
-		Vector3 oldTranslation = ship.transform.getTranslation(tmpV1);
-		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //Used if you want all 3-axis rotation
+			Vector3 oldTranslation = ships[0].transform.getTranslation(tmpV1);
+			Quaternion rotateQ = new Quaternion(q0, -1 * q1, q3, -1 * q2); //Used if you want all 3-axis rotation
 
-        ship.transform.setToRotation(0, 0, 0, 0);
-        ship.transform.set(oldTranslation, rotateQ);
+			ships[0].transform.setToRotation(0, 0, 0, 0);
+			ships[0].transform.set(oldTranslation, rotateQ);
 	}
 
-	public void moveShipLeft2 (float delta, float scale) {
-		if (ship.isExploding) return;
 
-		float q0 = (float) Invaders.mInvaderInterface2.getQ0();
-		float q1 = (float) Invaders.mInvaderInterface2.getQ1();
-		float q2 = (float) Invaders.mInvaderInterface2.getQ2();
-		float q3 = (float) Invaders.mInvaderInterface2.getQ3();
+	public void moveShipRight(float delta, float scale,int shipNumber) {
+			if (ships[shipNumber].isExploding) return;
 
-		ship2.transform.trn(-delta * Ship.SHIP_VELOCITY * scale, 0, 0);
-		ship2.transform.getTranslation(tmpV1);
-		if (tmpV1.x < PLAYFIELD_MIN_X) ship2.transform.trn(PLAYFIELD_MIN_X - tmpV1.x, 0, 0);
+			float q0 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ0();
+			float q1 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ1();
+			float q2 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ2();
+			float q3 = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ3();
 
-		Vector3 oldTranslation = ship2.transform.getTranslation(tmpV1);
-		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //Used if you want all 3-axis rotation
-
-		ship2.transform.setToRotation(0, 0, 0, 0);
-		ship2.transform.set(oldTranslation, rotateQ);
-	}
-
-	public void moveShipRight (float delta, float scale) {
-		if (ship.isExploding) return;
-
-		float q0 = (float) Invaders.mInvaderInterface1.getQ0();
-		float q1 = (float) Invaders.mInvaderInterface1.getQ1();
-		float q2 = (float) Invaders.mInvaderInterface1.getQ2();
-		float q3 = (float) Invaders.mInvaderInterface1.getQ3();
-
-		ship.transform.trn(+delta * Ship.SHIP_VELOCITY * scale, 0, 0);
-		if (tmpV1.x > PLAYFIELD_MAX_X) ship.transform.trn(PLAYFIELD_MAX_X - tmpV1.x, 0, 0);
-		Vector3 oldTranslation = ship.transform.getTranslation(tmpV1);
-		Vector3 flip = new Vector3(0,0,0);
-		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //For 3-axis
-        ship.transform.setToRotation(0, 0, 0, 0);
-        ship.transform.set(oldTranslation.mulAdd(flip, -1), rotateQ);
-	}
-
-	public void moveShipRight2 (float delta, float scale) {
-		if (ship.isExploding) return;
-
-		float q0 = (float) Invaders.mInvaderInterface2.getQ0();
-		float q1 = (float) Invaders.mInvaderInterface2.getQ1();
-		float q2 = (float) Invaders.mInvaderInterface2.getQ2();
-		float q3 = (float) Invaders.mInvaderInterface2.getQ3();
-
-		ship2.transform.trn(+delta * Ship.SHIP_VELOCITY * scale, 0, 0);
-		if (tmpV1.x > PLAYFIELD_MAX_X) ship2.transform.trn(PLAYFIELD_MAX_X - tmpV1.x, 0, 0);
-
-		Vector3 oldTranslation = ship2.transform.getTranslation(tmpV1);
-		Vector3 flip = new Vector3(0,0,0);
-		Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //For 3-axis
-		ship2.transform.setToRotation(0, 0, 0, 0);
-		ship2.transform.set(oldTranslation.mulAdd(flip, -1), rotateQ);
+			ships[shipNumber].transform.trn(+delta * Ship.SHIP_VELOCITY * scale, 0, 0);
+			if (tmpV1.x > PLAYFIELD_MAX_X) ships[shipNumber].transform.trn(PLAYFIELD_MAX_X - tmpV1.x, 0, 0);
+			Vector3 oldTranslation = ships[shipNumber].transform.getTranslation(tmpV1);
+			Vector3 flip = new Vector3(0,0,0);
+			Quaternion rotateQ = new Quaternion(q0,-1*q1,q3,-1*q2); //For 3-axis
+			ships[shipNumber].transform.setToRotation(0, 0, 0, 0);
+			ships[shipNumber].transform.set(oldTranslation.mulAdd(flip, -1), rotateQ);
 	}
 
 	public void shot () {
-		if (shipShot == null && !ship.isExploding) {
-			ship.transform.getTranslation(tmpV1);
-			shipShot = new Shot(shotModel, tmpV1, false);
-			shots.add(shipShot);
-			if (listener != null) listener.shot();
+		for(int shipNumber = 0; shipNumber < MAX_SHIPS; shipNumber++){
+			if (shipShot == null && !ships[shipNumber].isExploding) {
+				ships[shipNumber].transform.getTranslation(tmpV1);
+				shipShot = new Shot(shotModel, tmpV1, false);
+				shots.add(shipShot);
+				if (listener != null) listener.shot();
+			}
 		}
-	}
 
-	public void shot2 () {
-		if (shipShot == null && !ship2.isExploding) {
-			ship2.transform.getTranslation(tmpV1);
-			shipShot = new Shot(shotModel, tmpV1, false);
-			shots.add(shipShot);
-			if (listener != null) listener.shot();
-		}
 	}
 
 	@Override
 	public void dispose () {
-		shipModel.dispose();
-		shipModel2.dispose();
+		for (int shipNumber = 0; shipNumber<MAX_SHIPS; shipNumber++){
+			shipModels[shipNumber].dispose();
+		}
 		invaderModel.dispose();
 		blockModel.dispose();
 		shotModel.dispose();

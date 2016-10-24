@@ -1,8 +1,11 @@
 package com.mygdx.game.android.ControlPanel;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.app.Activity;
@@ -14,6 +17,7 @@ import android.widget.CompoundButton;
 
 import com.androidplot.util.PlotStatistics;
 import com.androidplot.xy.BarFormatter;
+import com.androidplot.xy.BarRenderer;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
@@ -46,8 +50,8 @@ public class DynamicData extends Activity {
     private CheckBox showFpsCb;
     private SimpleXYSeries aprLevelsSeries = null;
     private SimpleXYSeries azimuthHistorySeries = null;
-//    private SimpleXYSeries pitchHistorySeries = null;
-//    private SimpleXYSeries rollHistorySeries = null;
+    private SimpleXYSeries pitchHistorySeries = null;//
+    private SimpleXYSeries rollHistorySeries = null;//
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,12 +59,17 @@ public class DynamicData extends Activity {
         setContentView(R.layout.activity_dynamic_data);
 //        ButterKnife.inject(this);
 
-//        NebDeviceDetailFragment.dynamicData = this;
+        NebDeviceDetailFragment.dynamicDataActivity = this;
+
+        aprLevelsPlot = (XYPlot) findViewById(R.id.aprLevelsPlot);
 
         aprLevelsSeries = new SimpleXYSeries("APR Levels");
         aprLevelsSeries.useImplicitXVals();
-        aprLevelsPlot.addSeries(aprLevelsSeries,
-                new BarFormatter(Color.argb(100, 0, 200, 0), Color.rgb(0, 80, 0)));
+        int color1 = Color.argb(100, 0, 200, 0);
+        int color2 = Color.rgb(0, 80, 0);
+        BarFormatter barFormatter = new BarFormatter(color1, color2);
+
+        aprLevelsPlot.addSeries(aprLevelsSeries, barFormatter);
         aprLevelsPlot.setDomainStepValue(3);
         aprLevelsPlot.setTicksPerRangeLabel(3);
 
@@ -85,16 +94,16 @@ public class DynamicData extends Activity {
 
         azimuthHistorySeries = new SimpleXYSeries("Azimuth");
         azimuthHistorySeries.useImplicitXVals();
-//        pitchHistorySeries = new SimpleXYSeries("Pitch");
-//        pitchHistorySeries.useImplicitXVals();
-//        rollHistorySeries = new SimpleXYSeries("Roll");
-//        rollHistorySeries.useImplicitXVals();
+        pitchHistorySeries = new SimpleXYSeries("Pitch");
+        pitchHistorySeries.useImplicitXVals();
+        rollHistorySeries = new SimpleXYSeries("Roll");
+        rollHistorySeries.useImplicitXVals();
 
         aprHistoryPlot.setRangeBoundaries(-180, 359, BoundaryMode.FIXED);
         aprHistoryPlot.setDomainBoundaries(0, 30, BoundaryMode.FIXED);
         aprHistoryPlot.addSeries(azimuthHistorySeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, 0, null));//TODO: Fix Added random zeros???
-//        aprHistoryPlot.addSeries(pitchHistorySeries, new LineAndPointFormatter(Color.rgb(100, 200, 100), Color.BLACK,0, null));
-//        aprHistoryPlot.addSeries(rollHistorySeries, new LineAndPointFormatter(Color.rgb(200, 100, 100), Color.BLACK,0, null));
+        aprHistoryPlot.addSeries(pitchHistorySeries, new LineAndPointFormatter(Color.rgb(100, 200, 100), Color.BLACK, 0, null));
+        aprHistoryPlot.addSeries(rollHistorySeries, new LineAndPointFormatter(Color.rgb(200, 100, 100), Color.BLACK, 0, null));
         aprHistoryPlot.setDomainStepValue(5);
         aprHistoryPlot.setTicksPerRangeLabel(3);
         aprHistoryPlot.setDomainLabel("Sample Index");
@@ -121,33 +130,49 @@ public class DynamicData extends Activity {
                 }
             }
         });
-    }
 
-        //TODO: Map this into a function that can be called in onCharacteristicChanged()
-//        @Override
-    public synchronized void onSensorChanged(float magnitude) {
-        {
-            // update instantaneous data:
-            Number[] series1Numbers = {magnitude};
-            aprLevelsSeries.setModel(Arrays.asList(series1Numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
-
-            // get rid the oldest sample in history:
-            if (azimuthHistorySeries.size() > HISTORY_SIZE) {
-//                rollHistorySeries.removeFirst();
-//                pitchHistorySeries.removeFirst();
-                azimuthHistorySeries.removeFirst();
+        showFpsCb = (CheckBox) findViewById(R.id.showFpsCb);
+        showFpsCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                levelStats.setAnnotatePlotEnabled(b);
+                histStats.setAnnotatePlotEnabled(b);
             }
+        });
 
-            // add the latest history sample:
-            azimuthHistorySeries.addLast(null, magnitude);
-//            pitchHistorySeries.addLast(null, sensorEvent.values[1]);
-//            rollHistorySeries.addLast(null, sensorEvent.values[2]);
-
-            // redraw the Plots:
-            aprLevelsPlot.redraw();
-            aprHistoryPlot.redraw();
+        // get a ref to the BarRenderer so we can make some changes to it:
+        BarRenderer barRenderer = (BarRenderer) aprLevelsPlot.getRenderer(BarRenderer.class);
+        if (barRenderer != null) {
+            // make our bars a little thicker than the default so they can be seen better:
+            barRenderer.setBarWidth(25);
         }
+
+
+        // register for orientation sensor events:
+//        sensorMgr = (SensorManager) getApplicationContext().getSystemService(Context.SENSOR_SERVICE);
+//        for (Sensor sensor : sensorMgr.getSensorList(Sensor.TYPE_ORIENTATION)) {
+//            if (sensor.getType() == Sensor.TYPE_ORIENTATION) {
+//                orSensor = sensor;
+//            }
+//        }
+
+        // if we can't access the orientation sensor then exit:
+//        if (orSensor == null) {
+//            System.out.println("Failed to attach to orSensor.");
+//            cleanup();
+//        }
+
+//        sensorMgr.registerListener(this, orSensor, SensorManager.SENSOR_DELAY_UI);
     }
+
+
+    private void cleanup() {
+        // aunregister with the orientation sensor before exiting:
+//        sensorMgr.unregisterListener(this);
+        finish();
+    }
+
+
 
     /**
      * A simple formatter to convert bar indexes into sensor names.
@@ -179,6 +204,28 @@ public class DynamicData extends Activity {
         public Object parseObject(String source, ParsePosition pos) {
             return null;  // We don't use this so just return null for now.
         }
+    }
+
+//    @Override
+    public void onSensorChanged(float valAX, float valAY,float valAZ ) {
+        Number[] series1Numbers = {valAX, valAY, valAZ};
+        aprLevelsSeries.setModel(Arrays.asList(series1Numbers), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
+
+        // get rid the oldest sample in history:
+        if (rollHistorySeries.size() > HISTORY_SIZE) {
+            rollHistorySeries.removeFirst();
+            pitchHistorySeries.removeFirst();
+            azimuthHistorySeries.removeFirst();
+        }
+
+        // add the latest history sample:
+        azimuthHistorySeries.addLast(null, valAX);
+        pitchHistorySeries.addLast(null, valAY);
+        rollHistorySeries.addLast(null, valAZ);
+
+        // redraw the Plots:
+        aprLevelsPlot.redraw();
+        aprHistoryPlot.redraw();
     }
 
 

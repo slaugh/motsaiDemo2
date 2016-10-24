@@ -14,28 +14,39 @@ public class AndroidGetQ implements com.mygdx.game.Invaders.InvaderInterface {
     }
 
     @Override
+    public void setShipNumber(int number){
+        this.shipNumber = number;
+    }
+
+    @Override
     public double getQ0() {
 
-        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q0;
-        else return NebDeviceDetailFragment.latest_Q0_2;
+        return NebDeviceDetailFragment.latest_Q0s[shipNumber];
+
+//        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q0;
+//        else return NebDeviceDetailFragment.latest_Q0_2;
     }
 
     @Override
     public double getQ1() {
-        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q1;
-        else return NebDeviceDetailFragment.latest_Q1_2;
+
+        return NebDeviceDetailFragment.latest_Q1s[shipNumber];
+//        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q1;
+//        else return NebDeviceDetailFragment.latest_Q1_2;
     }
 
     @Override
     public double getQ2() {
-        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q2;
-        else return NebDeviceDetailFragment.latest_Q2_2;
+        return NebDeviceDetailFragment.latest_Q2s[shipNumber];
+//        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q2;
+//        else return NebDeviceDetailFragment.latest_Q2_2;
     }
 
     @Override
     public double getQ3() {
-        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q3;
-        else return NebDeviceDetailFragment.latest_Q3_2;
+        return NebDeviceDetailFragment.latest_Q3s[shipNumber];
+//        if(shipNumber ==1)        return NebDeviceDetailFragment.latest_Q3;
+//        else return NebDeviceDetailFragment.latest_Q3_2;
     }
 
     @Override

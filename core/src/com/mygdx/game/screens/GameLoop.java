@@ -77,7 +77,7 @@ public class GameLoop extends InvadersScreen implements SimulationListener {
 
 	@Override
 	public boolean isDone () {
-		return simulation.ship.lives == 0;
+		return simulation.ships[0].lives == 0;
 	}
 
 	@Override
@@ -89,83 +89,54 @@ public class GameLoop extends InvadersScreen implements SimulationListener {
 	public void update (float delta) {
 		simulation.update(delta);
 
-//		float q1 = BLEDeviceScanActivity.latest_Q0;
-//		float q2 = BLEDeviceScanActivity.latest_Q1;
-//		float q3 = BLEDeviceScanActivity.latest_Q2;
-//		float q4 = BLEDeviceScanActivity.latest_Q3;
-//
-//		//Equation from Omid's paper with conversions to make the math work
-//		double pi_d = Math.PI;
-//		float pi_f = (float)pi_d;
-//
-//		double q1_double = q1;
-//		double theta_double = 2*Math.acos(q1_double);
-//		float theta = (float)theta_double*180/pi_f;
-//
-//		double q2_double = q2;
-//		double rx_double = -1 * q2_double / Math.sin(theta_double/2);
-//		float rx = (float)rx_double;
-//
-//		double q3_double = q3;
-//		double ry_double = -1 * q3_double / Math.sin(theta_double/2);
-//		float ry = (float)ry_double;
-//
-//		double q4_double = q4;
-//		double rz_double = -1 * q4_double / Math.sin(theta_double/2);
-//		float rz = (float)rz_double;
-		float q0 = (float) Invaders.mInvaderInterface1.getQ0();
-		float q1 = (float) Invaders.mInvaderInterface1.getQ1();
-		float q2 = (float) Invaders.mInvaderInterface1.getQ2();
-		float q3 = (float) Invaders.mInvaderInterface1.getQ3();
+		float[] q0s = new float[simulation.MAX_SHIPS];
+		float[] q1s = new float[simulation.MAX_SHIPS];
+		float[] q2s = new float[simulation.MAX_SHIPS];
+		float[] q3s = new float[simulation.MAX_SHIPS];
 
-		float q0_2 = (float) Invaders.mInvaderInterface2.getQ0();
-		float q1_2 = (float) Invaders.mInvaderInterface2.getQ1();
-		float q2_2 = (float) Invaders.mInvaderInterface2.getQ2();
-		float q3_2 = (float) Invaders.mInvaderInterface2.getQ3();
+		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
+
+			q0s[shipNumber] = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ0();
+			q1s[shipNumber] = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ1();
+			q2s[shipNumber] = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ2();
+			q3s[shipNumber] = (float) Invaders.mInvaderInterfaceArray[shipNumber].getQ3();
+
+		}
 
 		float accelerometerY = Gdx.input.getAccelerometerY();
 
-		if (0.2f * (q0 * q1 + q2 * q3) > 0) {
-			simulation.moveShipLeft(delta, Math.abs(0.2f * (q0 * q1 + q2 * q3)));
-		} else{
-			simulation.moveShipRight(delta, Math.abs(0.2f * (q0 * q1 + q2 * q3)));
+		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
+			if (0.2f * (q0s[shipNumber] * q1s[shipNumber] + q2s[shipNumber] * q3s[shipNumber]) > 0) {
+				simulation.moveShipLeft(delta, Math.abs(0.2f * (q0s[shipNumber] * q1s[shipNumber] + q2s[shipNumber] * q3s[shipNumber])),shipNumber); //TODO: REFACTOR moveShipLeft() to include the ship number... since we don't want to move all the since
+			} else{
+				simulation.moveShipRight(delta, Math.abs(0.2f * (q0s[shipNumber] * q1s[shipNumber] + q2s[shipNumber] * q3s[shipNumber])),shipNumber);
+			}
 		}
-
-		if (0.2f * (q0_2 * q1_2 + q2_2 * q3_2)>0) {
-			simulation.moveShipLeft2(delta, Math.abs(0.2f * (q0_2 * q1_2 + q2_2 * q3_2)));
-		}else{
-			simulation.moveShipRight2(delta,Math.abs(0.2f * (q0_2 * q1_2 + q2_2 * q3_2)));
-		}
-
-
 
 		if (invaders.getController() != null) {
 			if (buttonsPressed > 0) {
 				simulation.shot();
-				simulation.shot2();
 			}
 
 			// if the left stick moved, move the ship
 			float axisValue = invaders.getController().getAxis(Ouya.AXIS_LEFT_X) * 0.5f;
 			if (Math.abs(axisValue) > 0.25f) {
 				if (axisValue > 0) {
-					simulation.moveShipRight(delta, axisValue);
-					simulation.moveShipRight2(delta, axisValue);
+					simulation.moveShipRight(delta, axisValue,1);
 				} else {
-					simulation.moveShipLeft(delta, -axisValue);
-					simulation.moveShipLeft2(delta, -axisValue);
+					simulation.moveShipLeft(delta, -axisValue,1);
 				}
 			}
 		}
 
-		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT) || Gdx.input.isKeyPressed(Keys.A)) simulation.moveShipLeft(delta, 0.5f);
-		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT) || Gdx.input.isKeyPressed(Keys.A)) simulation.moveShipLeft2(delta, 0.5f);
-
-		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT) || Gdx.input.isKeyPressed(Keys.D)) simulation.moveShipRight(delta, 0.5f);
-		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT) || Gdx.input.isKeyPressed(Keys.D)) simulation.moveShipRight2(delta, 0.5f);
-
+//		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT) || Gdx.input.isKeyPressed(Keys.A)) simulation.moveShipLeft(delta, 0.5f);
+//		if (Gdx.input.isKeyPressed(Keys.DPAD_LEFT) || Gdx.input.isKeyPressed(Keys.A)) simulation.moveShipLeft2(delta, 0.5f);
+//
+//		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT) || Gdx.input.isKeyPressed(Keys.D)) simulation.moveShipRight(delta, 0.5f);
+//		if (Gdx.input.isKeyPressed(Keys.DPAD_RIGHT) || Gdx.input.isKeyPressed(Keys.D)) simulation.moveShipRight2(delta, 0.5f);
+//
 		if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) simulation.shot();
-		if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) simulation.shot2();
+//		if (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Keys.SPACE)) simulation.shot2();
 	}
 
 	@Override

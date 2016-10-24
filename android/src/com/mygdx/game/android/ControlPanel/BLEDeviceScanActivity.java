@@ -75,14 +75,16 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private static Neblina activeDevice;
     private static NebDeviceDetailFragment activeDeviceDelegate;
     private static final int REQUEST_ENABLE_BT = 0;
+    private static final int MAX_BLE_DEVICES = 8;
     private static final long SCAN_PERIOD = 60000;
 
     //AWS cognito identity
     public String identityID = "";
 
     //Setup the Quaternion interface
-    public static AndroidGetQ invaderInterface = new AndroidGetQ(1);
-    public static AndroidGetQ invaderInterface2 = new AndroidGetQ(2);
+    public static AndroidGetQ[] invaderInterfaces;
+//    public static AndroidGetQ invaderInterface = new AndroidGetQ(1);
+//    public static AndroidGetQ invaderInterface2 = new AndroidGetQ(2);
     private static int numberOfConnectedDevices = 0;
 
     //GATT CALLBACK VARIABLES
@@ -106,6 +108,11 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        invaderInterfaces = new AndroidGetQ[MAX_BLE_DEVICES];
+        for(int i = 0; i < MAX_BLE_DEVICES; i++){
+            invaderInterfaces[i].setShipNumber(i);
+        }
 
         //Main initialization code
         activateBLE();
@@ -285,7 +292,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             Log.w("PROGRAM FLOW", "IN GAME FRAGMENT onCreateView()!");
-            return initializeForView(new Invaders(invaderInterface,invaderInterface2)); }
+            return initializeForView(new Invaders(invaderInterfaces)); }
     }
 
     @Override
@@ -335,10 +342,10 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
             DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
 
             Quaternions quaternions = new Quaternions();
-            quaternions.setQ1(NebDeviceDetailFragment.latest_Q0);
-            quaternions.setQ2(NebDeviceDetailFragment.latest_Q1);
-            quaternions.setQ3(NebDeviceDetailFragment.latest_Q2);
-            quaternions.setQ4(NebDeviceDetailFragment.latest_Q3);
+//            quaternions.setQ1(NebDeviceDetailFragment.latest_Q0);
+//            quaternions.setQ2(NebDeviceDetailFragment.latest_Q1);
+//            quaternions.setQ3(NebDeviceDetailFragment.latest_Q2);
+//            quaternions.setQ4(NebDeviceDetailFragment.latest_Q3);
             quaternions.setTimestamp(Long.toString(NebDeviceDetailFragment.timestamp_N));
 
             mapper.save(quaternions);

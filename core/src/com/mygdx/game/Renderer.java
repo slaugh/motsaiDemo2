@@ -92,13 +92,19 @@ public class Renderer {
 		renderBackground();
 		gl.glEnable(GL20.GL_DEPTH_TEST);
 		gl.glEnable(GL20.GL_CULL_FACE);
-		setProjectionAndCamera(simulation.ship);
-		setProjectionAndCamera(simulation.ship2);
+		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
+			setProjectionAndCamera(simulation.ships[shipNumber]);
+		}
+
+
+
 
 		modelBatch.begin(camera);
 		modelBatch.render(simulation.explosions);
-		if (!simulation.ship.isExploding) modelBatch.render(simulation.ship, lights);
-		if (!simulation.ship2.isExploding) modelBatch.render(simulation.ship2, lights);
+		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
+			if (!simulation.ships[shipNumber].isExploding) modelBatch.render(simulation.ships[shipNumber], lights);
+
+		}
 
 		modelBatch.render(simulation.invaders, lights);
 		modelBatch.render(simulation.blocks);
@@ -110,17 +116,13 @@ public class Renderer {
 
 		spriteBatch.setProjectionMatrix(viewMatrix);
 		spriteBatch.begin();
-		if (simulation.ship.lives != lastLives || simulation.score != lastScore || simulation.wave != lastWave) {
-			status = "lives: " + simulation.ship.lives + " wave: " + simulation.wave + " score: " + simulation.score;
-			lastLives = simulation.ship.lives;
-			lastScore = simulation.score;
-			lastWave = simulation.wave;
-		}
-		if (simulation.ship2.lives != lastLives || simulation.score != lastScore || simulation.wave != lastWave) {
-			status = "lives: " + simulation.ship2.lives + " wave: " + simulation.wave + " score: " + simulation.score;
-			lastLives = simulation.ship2.lives;
-			lastScore = simulation.score;
-			lastWave = simulation.wave;
+		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
+			if (simulation.ships[shipNumber].lives != lastLives || simulation.score != lastScore || simulation.wave != lastWave) {
+				status = "lives: " + simulation.ships[shipNumber].lives + " wave: " + simulation.wave + " score: " + simulation.score;
+				lastLives = simulation.ships[shipNumber].lives;
+				lastScore = simulation.score;
+				lastWave = simulation.wave;
+			}
 		}
 
 		spriteBatch.enableBlending();

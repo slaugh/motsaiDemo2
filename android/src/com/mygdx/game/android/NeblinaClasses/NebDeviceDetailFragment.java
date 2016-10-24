@@ -68,6 +68,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "UART Data Port", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_SET_FUSION_TYPE, "Fusion 9 axis", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION, "Quaternion Stream", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_IMU_DATA, "IMU Stream", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MOTION_STATE, "Notify MOTION STATE", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MAG_DATA, "Mag Stream", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_LOCK_HEADING_REF, "Lock Heading Ref.", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, Neblina.STORAGE_CMD_ERASE, "Flash Erase All", 1, ""),
@@ -93,21 +95,30 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     private ListView mCmdListView;
 
     //Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes)
-    public static float latest_Q0 = 0.0f;
-    public static float latest_Q1 = 0.0f;
-    public static float latest_Q2 = 0.0f;
-    public static float latest_Q3 = 0.0f;
+    final int MAX_NUMBER_OF_BLUETOOTH_DEVICES = 8;
+    public static float[] latest_Q0s;
+    public static float[] latest_Q1s;
+    public static float[] latest_Q2s;
+    public static float[] latest_Q3s;
 
-    public static float latest_Q0_2 = 0.0f;
-    public static float latest_Q1_2 = 0.0f;
-    public static float latest_Q2_2 = 0.0f;
-    public static float latest_Q3_2 = 0.0f;
+//    public static float latest_Q0 = 0.0f;
+//    public static float latest_Q1 = 0.0f;
+//    public static float latest_Q2 = 0.0f;
+//    public static float latest_Q3 = 0.0f;
+//
+//    public static float latest_Q0_2 = 0.0f;
+//    public static float latest_Q1_2 = 0.0f;
+//    public static float latest_Q2_2 = 0.0f;
+//    public static float latest_Q3_2 = 0.0f;
 
     public static String Q0_string = "";
     public static String Q1_string = "";
     public static String Q2_string = "";
     public static String Q3_string = "";
     public static long timestamp_N =0;
+
+    //Dynamic Graph Activity
+    public static DynamicData dynamicDataActivity;
 
 
     //Default Constructor
@@ -222,6 +233,15 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                 switch (cmdList[idx].mCmdId) {
                     case MOTION_CMD_QUATERNION:
                         mNebDev.streamQuaternion(isChecked);
+                        break;
+                    case MOTION_CMD_IMU_DATA:
+                        mNebDev.streamIMU(isChecked);
+                        break;
+                    case MOTION_CMD_MOTION_STATE:
+                        mNebDev.streamMotionState(isChecked);
+                        break;
+                    default:
+                        Log.w("BLUETOOTH_DEBUG","COMMAND NOT IMPLEMENTED!");
                 }
                 break;
         }
@@ -250,6 +270,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public void didReceiveFusionData(int type , byte[] data, boolean errFlag,int deviceNum) {
         switch (type) {
             case MOTION_CMD_QUATERNION:
+
+                //TODO: CLEAN UP THIS MESSY CODE... SIMPLE CALLS CAN BE USED TO DECODE THESE PACKETS
                 //Merge Note B. Original Code
                 //Puts the characteristic values into the intent
                 if (data != null && data.length > 0) {
@@ -273,30 +295,16 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     final byte[] q3 = Arrays.copyOfRange(data, 14-4, 15-4 + 1); // Bytes 14-15 are Q3 value
                     final byte[] reserved = Arrays.copyOfRange(data, 16-4, 19-4 + 1); // Bytes 16-19 are reserved
 
-                    if(deviceNum == 1) {
-                        //Convert to big endian
-                        latest_Q0 = normalizedQ(q0);
-                        latest_Q1 = normalizedQ(q1);
-                        latest_Q2 = normalizedQ(q2);
-                        latest_Q3 = normalizedQ(q3);
+                    latest_Q0s[deviceNum] = normalizedQ(q0);
+                    latest_Q1s[deviceNum] = normalizedQ(q1);
+                    latest_Q2s[deviceNum] = normalizedQ(q2);
+                    latest_Q3s[deviceNum] = normalizedQ(q3);
 
-                        //Create a string version
-                        Q0_string = String.valueOf(latest_Q0);
-                        Q1_string = String.valueOf(latest_Q1);
-                        Q2_string = String.valueOf(latest_Q2);
-                        Q3_string = String.valueOf(latest_Q3);
-
-                        //Activate the Dynamic View if initialized
-//                        if(dynamicData!=null){
-//                            dynamicData.onSensorChanged(latest_Q0);
-//                        }
-
-                    }else{
-                        latest_Q0_2 = normalizedQ(q0);
-                        latest_Q1_2 = normalizedQ(q1);
-                        latest_Q2_2 = normalizedQ(q2);
-                        latest_Q3_2 = normalizedQ(q3);
-                    }
+                    //Create a string version
+                    Q0_string = String.valueOf(latest_Q0s[deviceNum]);
+                    Q1_string = String.valueOf(latest_Q1s[deviceNum]);
+                    Q2_string = String.valueOf(latest_Q2s[deviceNum]);
+                    Q3_string = String.valueOf(latest_Q3s[deviceNum]);
 
                     //Merge Note A. Neblina Code
                     final String s1 = String.format(Q0_string+ ", ");
@@ -326,10 +334,29 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                 Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_DOWN_SAMPLE");
                 break;
             case MOTION_CMD_MOTION_STATE:
-                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_MOTION_STATE");
+                short motion = (short) data[8-4];
+                //Byte 8 is motion start(1) or stop (0)
+                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_MOTION_STATE:" + motion);
                 break;
             case MOTION_CMD_IMU_DATA:
-                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_IMU_DATA");
+                short valAX = (short)(((data[9-4]&0xff)<<8)|(data[8-4]&0xff)); //extract the value
+                float normalizedAX = (float) valAX / 32768; //normalize by dividing by 2^15
+                if (normalizedAX > 1.0) normalizedAX = normalizedAX-2;
+
+                short valAY = (short)(((data[11-4]&0xff)<<8)|(data[10-4]&0xff));
+                float normalizedAY = (float) valAY / 32768; //normalize by dividing by 2^15
+                if (normalizedAY > 1.0) normalizedAY = normalizedAY-2;
+
+
+                short valAZ = (short)(((data[13-4]&0xff)<<8)|(data[12-4]&0xff));
+                float normalizedAZ = (float) valAZ / 32768; //normalize by dividing by 2^15
+                if (normalizedAZ > 1.0) normalizedAZ = normalizedAZ-2;
+
+
+                double magnitude = Math.sqrt(((double) valAX)*((double) valAX) + ((double) valAY)*((double) valAY) + ((double) valAZ)*((double) valAZ));
+                dynamicDataActivity.onSensorChanged(normalizedAX*100,normalizedAY*100,normalizedAZ*100);
+//                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_IMU_DATA: " + magnitude);
+                Log.w("BLUETOOTH_DEBUG", "Accelerometer: " + normalizedAX + "," + normalizedAY + "," + normalizedAZ);
                 break;
             case MOTION_CMD_EULER_ANGLE:
                 Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_EULER_ANGLE");
