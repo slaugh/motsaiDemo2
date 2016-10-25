@@ -102,7 +102,7 @@ public class Renderer {
 		modelBatch.begin(camera);
 		modelBatch.render(simulation.explosions);
 		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
-			if (!simulation.ships[shipNumber].isExploding) modelBatch.render(simulation.ships[shipNumber], lights);
+			if (!simulation.ships[shipNumber].isExploding && simulation.ships[shipNumber].isActive) modelBatch.render(simulation.ships[shipNumber], lights);
 
 		}
 

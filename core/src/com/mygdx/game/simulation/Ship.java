@@ -21,6 +21,7 @@ public class Ship extends ModelInstance {
 	public static final float SHIP_VELOCITY = 30;
 	public int lives = 3;
 	public boolean isExploding = false;
+	public boolean isActive = false;
 	public float explodeTime = 0;
 
 	public Ship (Model model) {

@@ -106,8 +106,10 @@ public class GameLoop extends InvadersScreen implements SimulationListener {
 		float accelerometerY = Gdx.input.getAccelerometerY();
 
 		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
+
+			//This assumps that it is either left or right...
 			if (0.2f * (q0s[shipNumber] * q1s[shipNumber] + q2s[shipNumber] * q3s[shipNumber]) > 0) {
-				simulation.moveShipLeft(delta, Math.abs(0.2f * (q0s[shipNumber] * q1s[shipNumber] + q2s[shipNumber] * q3s[shipNumber])),shipNumber); //TODO: REFACTOR moveShipLeft() to include the ship number... since we don't want to move all the since
+				simulation.moveShipLeft(delta, Math.abs(0.2f * (q0s[shipNumber] * q1s[shipNumber] + q2s[shipNumber] * q3s[shipNumber])),shipNumber);
 			} else{
 				simulation.moveShipRight(delta, Math.abs(0.2f * (q0s[shipNumber] * q1s[shipNumber] + q2s[shipNumber] * q3s[shipNumber])),shipNumber);
 			}

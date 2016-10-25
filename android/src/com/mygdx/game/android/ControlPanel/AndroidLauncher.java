@@ -26,7 +26,7 @@ import java.util.List;
 public class AndroidLauncher extends FragmentActivity implements AndroidFragmentApplication.Callbacks {
     public static AndroidGetQ invaderInterface = new AndroidGetQ(1);
     public static AndroidGetQ invaderInterface2 = new AndroidGetQ(2);
-    public static AndroidGetQ[] invaderInterfaces = new AndroidGetQ[8];
+    public static AndroidGetQ[] invaderInterfaces = new AndroidGetQ[2];
     private final static int REQUEST_ENABLE_BT = 1;
 
 

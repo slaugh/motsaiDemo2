@@ -43,6 +43,7 @@ import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
 import com.mygdx.game.android.NeblinaClasses.Neblina;
 import com.mygdx.game.android.NeblinaClasses.Quaternions;
 import com.mygdx.game.android.R;
+import com.mygdx.game.simulation.Simulation;
 
 //Java
 import java.nio.ByteBuffer;
@@ -75,17 +76,15 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private static Neblina activeDevice;
     private static NebDeviceDetailFragment activeDeviceDelegate;
     private static final int REQUEST_ENABLE_BT = 0;
-    private static final int MAX_BLE_DEVICES = 8;
+    private static final int MAX_BLE_DEVICES = Simulation.MAX_SHIPS;
     private static final long SCAN_PERIOD = 60000;
 
     //AWS cognito identity
     public String identityID = "";
 
     //Setup the Quaternion interface
-    public static AndroidGetQ[] invaderInterfaces;
-//    public static AndroidGetQ invaderInterface = new AndroidGetQ(1);
-//    public static AndroidGetQ invaderInterface2 = new AndroidGetQ(2);
-    private static int numberOfConnectedDevices = 0;
+    public static AndroidGetQ[] invaderInterfaces = new AndroidGetQ[MAX_BLE_DEVICES];
+    public static int numberOfConnectedDevices = 0;
 
     //GATT CALLBACK VARIABLES
     private static final int STATE_DISCONNECTED = 0;
@@ -109,9 +108,11 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        invaderInterfaces = new AndroidGetQ[MAX_BLE_DEVICES];
+
+        //TODO: WHY CAN I NOT REFERENCE invaderInterfaces[0]???
+//        invaderInterfaces = new AndroidGetQ[MAX_BLE_DEVICES];
         for(int i = 0; i < MAX_BLE_DEVICES; i++){
-            invaderInterfaces[i].setShipNumber(i);
+            invaderInterfaces[i] = new AndroidGetQ(i);
         }
 
         //Main initialization code
@@ -244,8 +245,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                             //Add the device to the list if it isn't there already
                             if(device.getName() != null){
 
-                                Neblina neblina = new Neblina(deviceID,device,numberOfConnectedDevices+1);
-                                numberOfConnectedDevices++;
+                                Neblina neblina = new Neblina(deviceID,device);
                                 if (mDeviceList.containsKey(neblina.toString()) == false) {
                                     mLeDeviceListAdapter.add(neblina.toString());
                                     mLeDeviceListAdapter.notifyDataSetChanged();

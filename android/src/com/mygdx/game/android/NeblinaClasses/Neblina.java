@@ -16,6 +16,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
+import com.mygdx.game.simulation.Simulation;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -120,6 +123,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte MOTION_CMD_EXTRN_HEADING_CORR  = 0x13;
 
     private int deviceNum;
+    private int connectedDevNum;
 
     int initializeState = 0;
 
@@ -159,8 +163,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         return Nebdev.getName() + "_" + Long.toHexString(DevId).toUpperCase();
     }
 
-    public Neblina(long id, BluetoothDevice dev, int num) {
-        deviceNum = num;
+    public Neblina(long id, BluetoothDevice dev) {
         Nebdev = dev;
         DevId = id;
         mDelegate = null;
@@ -196,10 +199,17 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
         String intentAction;
         if (newState == BluetoothProfile.STATE_CONNECTED) {
+
+            connectedDevNum = BLEDeviceScanActivity.numberOfConnectedDevices;
+            Simulation.ships[connectedDevNum].isActive = true;
+            BLEDeviceScanActivity.numberOfConnectedDevices++;
+            Log.w("BLUETOOTH DEBUG", "CONNECTION ESTABLISHED. " + connectedDevNum + " devices connected");
             gatt.discoverServices();
         }
         else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.w("BLUETOOTH DEBUG", "DISCONNECTED... BYE BYE!");
+            connectedDevNum = -1;
+            BLEDeviceScanActivity.numberOfConnectedDevices--;
         }
     }
 
@@ -344,7 +354,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 lastTime = currentTime;
 
 
-                mDelegate.didReceiveFusionData(pkt[3], data, errFlag, deviceNum);
+                mDelegate.didReceiveFusionData(pkt[3], data, errFlag, connectedDevNum);
                 break;
             case NEB_CTRL_SUBSYS_POWERMGMT:	// Power management
                 mDelegate.didReceivePmgntData(pkt[3], data,  datalen, errFlag);
@@ -1196,4 +1206,5 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         //By default start streaming quaternions
         streamQuaternion(true);
     }
+
 }

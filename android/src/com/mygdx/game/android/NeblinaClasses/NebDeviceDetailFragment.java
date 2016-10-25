@@ -21,6 +21,7 @@ import com.mygdx.game.android.Adapters.NebCmdItem;
 import com.mygdx.game.android.Adapters.NebListAdapter;
 import com.mygdx.game.android.ControlPanel.DynamicData;
 import com.mygdx.game.android.R;
+import com.mygdx.game.simulation.Simulation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,21 +96,11 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     private ListView mCmdListView;
 
     //Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes)
-    final int MAX_NUMBER_OF_BLUETOOTH_DEVICES = 8;
-    public static float[] latest_Q0s;
-    public static float[] latest_Q1s;
-    public static float[] latest_Q2s;
-    public static float[] latest_Q3s;
+    public static float[] latest_Q0s = new float[Simulation.MAX_SHIPS];
+    public static float[] latest_Q1s = new float[Simulation.MAX_SHIPS];
+    public static float[] latest_Q2s = new float[Simulation.MAX_SHIPS];
+    public static float[] latest_Q3s = new float[Simulation.MAX_SHIPS];
 
-//    public static float latest_Q0 = 0.0f;
-//    public static float latest_Q1 = 0.0f;
-//    public static float latest_Q2 = 0.0f;
-//    public static float latest_Q3 = 0.0f;
-//
-//    public static float latest_Q0_2 = 0.0f;
-//    public static float latest_Q1_2 = 0.0f;
-//    public static float latest_Q2_2 = 0.0f;
-//    public static float latest_Q3_2 = 0.0f;
 
     public static String Q0_string = "";
     public static String Q1_string = "";

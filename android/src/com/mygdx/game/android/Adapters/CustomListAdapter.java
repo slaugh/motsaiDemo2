@@ -77,7 +77,6 @@ public class CustomListAdapter extends BaseAdapter {
             public void onClick(View v) {
                 ViewHolder temp = (ViewHolder) v.getTag();
                 p.onListItemClick(temp.tv.getText().toString());
-                Toast.makeText(context, "Connecting to "+neblinas.get(position), Toast.LENGTH_SHORT).show();
             }
         });
         return convertView;
