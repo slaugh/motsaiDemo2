@@ -243,22 +243,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 streamQuaternion(true);
                 initializeState++;
                 break;
-//            case 1:
-//                getFirmwareVersion();
-//                initializeState++;
-//                break;
-//            case 2:
-//                getMotionStatus();
-//                initializeState++;
-//                break;
-//            case 3:
-//                getDataPortState();
-//                initializeState++;
-//                break;
-//            case 4:
-//                getLed();
-//                initializeState++;
-//                break;
             default:
                 break;
         }
@@ -448,7 +432,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         mCtrlChar.setValue(pkbuf);
         boolean isWriteSuccessful = mBleGatt.writeCharacteristic(mCtrlChar);
         Log.w("BLUETOOTH DEBUG", "Writing Recorder Status: " + isWriteSuccessful);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void setDataPort(int PortIdx, byte Ctrl) {
@@ -470,7 +453,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 6), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void setInterface(byte Interf) {
@@ -492,7 +474,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     // *** EEPROM
@@ -513,7 +494,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void eepromWrite(int pageNo, byte[] data) {
@@ -537,7 +517,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     // *** LED subsystem commands
@@ -580,7 +559,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     // *** Power management sybsystem commands
@@ -598,7 +576,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 4), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void setBatteryChargeCurrent(int Current) {
@@ -619,7 +596,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 6), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     // *** Motion Settings
@@ -638,7 +614,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-//device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void setFusionType(byte Mode) {
@@ -658,7 +633,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-//device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void setLockHeadingReference(boolean Enable) {
@@ -675,7 +649,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     // *** Motion Streaming Send
@@ -694,7 +667,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-//device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void streamEulerAngle(boolean Enable)
@@ -721,7 +693,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-//device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void streamExternalForce(boolean Enable)
@@ -747,8 +718,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void streamIMU(boolean Enable)
@@ -774,8 +743,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void streamMAG(boolean Enable)
@@ -801,8 +768,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void streamMotionState(boolean Enable)
@@ -828,8 +793,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void streamPedometer(boolean Enable)
@@ -855,8 +818,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
 
@@ -936,8 +897,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void  streamSittingStanding(boolean Enable) {
@@ -962,8 +921,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void streamTrajectoryInfo(boolean Enable)
@@ -989,8 +946,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     // *** Motion utilities
@@ -1008,8 +963,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void recordTrajectory(boolean Enable)
@@ -1035,8 +988,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     // *** Storage subsystem commands
@@ -1054,8 +1005,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void getSessionInfo(int sessionId) {
@@ -1075,8 +1024,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void eraseStorage(boolean Enable) {
@@ -1101,9 +1048,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
-
     }
 
     public void sessionPlayback(boolean Enable, int sessionId) {
@@ -1132,8 +1076,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     public void sessionRecord(boolean Enable) {
@@ -1158,8 +1100,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
-
-        //device.writeValue(NSData(bytes: UnsafeMutablePointer<Void>(pkbuf), length: 20), forCharacteristic: ctrlChar, type: CBCharacteristicWriteType.WithoutResponse)
     }
 
     @Override
