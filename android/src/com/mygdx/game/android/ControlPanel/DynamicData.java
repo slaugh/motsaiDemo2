@@ -59,6 +59,8 @@ public class DynamicData extends Activity {
         setContentView(R.layout.activity_dynamic_data);
 //        ButterKnife.inject(this);
 
+        NebDeviceDetailFragment.upAndRunning = true;
+
         NebDeviceDetailFragment.dynamicDataActivity = this;
 
         aprLevelsPlot = (XYPlot) findViewById(R.id.aprLevelsPlot);

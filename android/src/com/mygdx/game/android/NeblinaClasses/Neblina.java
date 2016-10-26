@@ -20,6 +20,8 @@ import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
 import com.mygdx.game.simulation.Simulation;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 
@@ -125,6 +127,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     private int deviceNum;
     private int connectedDevNum;
 
+    //Periodic RSSI poll variables
+    private boolean shouldPollRSSI = false;
+    private long RETRY_TIME = 1000;
+    private long START_TIME = 1000;
+
     int initializeState = 0;
 
     BluetoothDevice Nebdev;
@@ -134,7 +141,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     BluetoothGattCharacteristic mCtrlChar;
 
     // Delay Calculation Variables //
-    public static int size_max = 100;
+    public static int size_max = 10000;
 
     // Packet Interval Variables //
     public static long[] delayTimeArray = new long[size_max];
@@ -229,7 +236,36 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
             mBleGatt.writeDescriptor(descriptor);
             writeDescriptorTimestamp = System.currentTimeMillis();
+
+
+            if(shouldPollRSSI){
+                Timer myTimer = new Timer();
+                myTimer.scheduleAtFixedRate(new Task(),START_TIME,RETRY_TIME);
+                myTimer.scheduleAtFixedRate(new JitterTest(),START_TIME+250,20);
+            }
         }
+    }
+
+    public class Task extends TimerTask {
+
+        @Override
+        public void run() {
+            mBleGatt.readRemoteRssi();
+        Log.w("BLUETOOTH_DEBUG","Requesting RSSI AT:" + System.currentTimeMillis());
+            // DO WHAT YOU NEED TO DO HERE
+        }
+    }
+
+    public class JitterTest extends  TimerTask {
+        @Override
+        public void run() {
+            getLed();
+        }
+    }
+
+
+    public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
+        Log.w("BLUETOOTH_DEBUG","RSSI is:" +  rssi);
     }
 
     //This is called as a confirmation of setting CharacteristicNotifications
@@ -240,7 +276,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         Log.w("BLUETOOTH DEBUG", "Write Delay is: " + writeDelay);
         switch (initializeState){
             case 0:
-                streamQuaternion(true);
+//                streamQuaternion(true);
                 initializeState++;
                 break;
             default:
@@ -252,7 +288,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
         switch (initializeState){
             case 0:
-                streamQuaternion(true);
+//                streamQuaternion(true);
                 initializeState++;
                 break;
             case 1:
@@ -350,7 +386,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 if(file_size2 < size_max){
                     roundTripTimeArray[file_size2] = returnTime - sentTime;
                     file_size2++;
-                    getLed();
                 }
 
                 mDelegate.didReceiveLedData(pkt[3], data,  datalen, errFlag);

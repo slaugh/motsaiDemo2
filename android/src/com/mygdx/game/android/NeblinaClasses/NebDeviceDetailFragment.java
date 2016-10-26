@@ -110,6 +110,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     //Dynamic Graph Activity
     public static DynamicData dynamicDataActivity;
+    public static boolean upAndRunning = false;
 
 
     //Default Constructor
@@ -345,9 +346,11 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
 
                 double magnitude = Math.sqrt(((double) valAX)*((double) valAX) + ((double) valAY)*((double) valAY) + ((double) valAZ)*((double) valAZ));
-                dynamicDataActivity.onSensorChanged(normalizedAX*100,normalizedAY*100,normalizedAZ*100);
-//                Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_IMU_DATA: " + magnitude);
-                Log.w("BLUETOOTH_DEBUG", "Accelerometer: " + normalizedAX + "," + normalizedAY + "," + normalizedAZ);
+
+                if(upAndRunning) {
+                    dynamicDataActivity.onSensorChanged(normalizedAX * 100, normalizedAY * 100, normalizedAZ * 100);
+                }
+//                Log.w("BLUETOOTH_DEBUG", "Accelerometer: " + normalizedAX + "," + normalizedAY + "," + normalizedAZ);
                 break;
             case MOTION_CMD_EULER_ANGLE:
                 Log.w("BLUETOOTH_DEBUG", "COMMAND: MOTION_CMD_EULER_ANGLE");
