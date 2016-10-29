@@ -128,7 +128,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     private int connectedDevNum;
 
     //Periodic RSSI poll variables
-    private boolean shouldPollRSSI = false;
+    private boolean shouldPollRSSI = true;
     private long RETRY_TIME = 1000;
     private long START_TIME = 1000;
 
@@ -159,6 +159,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     private long writeDescriptorTimestamp;
     private long writeDelay;
     private long onDescWriteTime;
+    private int motionStatus = 0;
 
 
     public void SetDelegate(NeblinaDelegate neblinaDelegate) {
@@ -241,7 +242,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             if(shouldPollRSSI){
                 Timer myTimer = new Timer();
                 myTimer.scheduleAtFixedRate(new Task(),START_TIME,RETRY_TIME);
-                myTimer.scheduleAtFixedRate(new JitterTest(),START_TIME+250,20);
+//                myTimer.scheduleAtFixedRate(new JitterTest(),START_TIME+250,20);
             }
         }
     }
@@ -266,6 +267,26 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
     public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
         Log.w("BLUETOOTH_DEBUG","RSSI is:" +  rssi);
+
+
+        if(rssi > 80){
+            mBleGatt.readRemoteRssi();
+            if(motionStatus==1){
+                //TODO: OH NO! THE BABY NEEDS SAVING!!! Trigger a PUT request to notify the server
+                HttpClient client = new HttpClient();
+                GetMethod method = new GetMethod("http://requestb.in/1h67p571");
+                try {
+                    int statusCode = client.executeMethod(method);
+                    byte[] responseBody = method.getResponseBody();
+                    System.out.println(new String(responseBody));
+                } catch (Exception e) {
+                    System.err.println("Fatal error: " + e.getMessage());
+                    e.printStackTrace();
+                } finally {
+                    method.releaseConnection();
+                }
+            }
+        }
     }
 
     //This is called as a confirmation of setting CharacteristicNotifications
@@ -276,7 +297,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         Log.w("BLUETOOTH DEBUG", "Write Delay is: " + writeDelay);
         switch (initializeState){
             case 0:
-//                streamQuaternion(true);
+                streamQuaternion(true);
                 initializeState++;
                 break;
             default:
@@ -288,7 +309,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
         switch (initializeState){
             case 0:
-//                streamQuaternion(true);
+                streamQuaternion(true);
                 initializeState++;
                 break;
             case 1:

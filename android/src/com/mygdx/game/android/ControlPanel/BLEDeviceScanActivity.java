@@ -108,9 +108,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-        //TODO: WHY CAN I NOT REFERENCE invaderInterfaces[0]???
-//        invaderInterfaces = new AndroidGetQ[MAX_BLE_DEVICES];
         for(int i = 0; i < MAX_BLE_DEVICES; i++){
             invaderInterfaces[i] = new AndroidGetQ(i);
         }
@@ -123,7 +120,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         scanLeDevice(true);
 
         //What this activity does:
-        //A. Populate list via mLeScanCallback
+        //A. Populate Bluetooth Device list via mLeScanCallback
         //B. Wait for the user to choose a device
         //C. Trigger onListItemClick to create a NebDeviceDetailFragment based on selection
     }
