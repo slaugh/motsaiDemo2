@@ -273,18 +273,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             mBleGatt.readRemoteRssi();
             if(motionStatus==1){
                 //TODO: OH NO! THE BABY NEEDS SAVING!!! Trigger a PUT request to notify the server
-                HttpClient client = new HttpClient();
-                GetMethod method = new GetMethod("http://requestb.in/1h67p571");
-                try {
-                    int statusCode = client.executeMethod(method);
-                    byte[] responseBody = method.getResponseBody();
-                    System.out.println(new String(responseBody));
-                } catch (Exception e) {
-                    System.err.println("Fatal error: " + e.getMessage());
-                    e.printStackTrace();
-                } finally {
-                    method.releaseConnection();
-                }
             }
         }
     }
