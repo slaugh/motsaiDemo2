@@ -18,7 +18,11 @@ import android.util.Log;
 
 import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
 import com.mygdx.game.simulation.Simulation;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -160,6 +164,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     private long writeDelay;
     private long onDescWriteTime;
     private int motionStatus = 0;
+    private String getMotionUrl = "http://requestb.in/1h67p571";
+    private int rssiThreshold = 75;
 
 
     public void SetDelegate(NeblinaDelegate neblinaDelegate) {
@@ -252,8 +258,15 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         @Override
         public void run() {
             mBleGatt.readRemoteRssi();
-        Log.w("BLUETOOTH_DEBUG","Requesting RSSI AT:" + System.currentTimeMillis());
-            // DO WHAT YOU NEED TO DO HERE
+            
+            //TODO: Fix the fact that this is probably a blocking code with a callback version
+            GETMotionState example = new GETMotionState();
+            try {
+                String response = example.run(getMotionUrl);
+                Log.w("BLUETOOTH_DEBUG", "RECEIVED THE MOTION STATUS: " + response.toString());
+            } catch (IOException e){
+                Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON!");
+            }
         }
     }
 
@@ -264,15 +277,30 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
     }
 
+    public class GETMotionState {
+        OkHttpClient client = new OkHttpClient();
+
+        String run(String url) throws IOException {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            return response.body().string();
+        }
+    }
+
 
     public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
         Log.w("BLUETOOTH_DEBUG","RSSI is:" +  rssi);
 
 
-        if(rssi > 80){
+        if(rssi > rssiThreshold){
             mBleGatt.readRemoteRssi();
+
             if(motionStatus==1){
                 //TODO: OH NO! THE BABY NEEDS SAVING!!! Trigger a PUT request to notify the server
+
             }
         }
     }
