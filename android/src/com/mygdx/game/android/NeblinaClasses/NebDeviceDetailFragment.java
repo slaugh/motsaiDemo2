@@ -367,9 +367,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             default:
                 Log.w("BLUETOOTH_DEBUG", "COMMAND CODE NOT RECOGNIZED");
 
+        }
     }
-    }
-
 
     private float normalizedQ(byte[] q) {
         if(q.length==2){
@@ -379,7 +378,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             return normalized;
         }else return -1;
     }
-
 
     public void didReceiveDebugData(int type, final byte[] data, int dataLen, boolean errFlag) {
 
@@ -538,6 +536,10 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
             }
             break;
+            case DEBUG_CMD_SET_DATAPORT:
+                //TODO: Set the switch button to ON for the BLE PORT
+                break;
+
             case DEBUG_CMD_GET_DATAPORT:
                 int i = getCmdIdx(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT);
                 final Switch v = (Switch) mCmdListView.findViewWithTag(i);
@@ -575,7 +577,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     }
     public void didReceiveLedData(int type, byte[] data, int dataLen, boolean errFlag) {
-
         Log.w("BLUETOOTH DEBUG", "DID RECEIVE LED DATA");
     }
 

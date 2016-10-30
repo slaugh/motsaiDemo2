@@ -14,6 +14,8 @@ import android.os.IBinder;
 import android.os.Vibrator;
 import android.util.Log;
 
+import com.mygdx.game.android.NeblinaClasses.Neblina;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,6 +23,7 @@ public class HapticService extends Service implements SensorEventListener {
 
     boolean awayFromBaby;
     boolean babyMoving;
+    public static Neblina mNeblina;
 
     private long RETRY_TIME = 1000;
     private long START_TIME = 1000;

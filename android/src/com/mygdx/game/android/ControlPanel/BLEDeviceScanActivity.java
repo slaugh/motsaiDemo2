@@ -43,6 +43,7 @@ import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
 import com.mygdx.game.android.NeblinaClasses.Neblina;
 import com.mygdx.game.android.NeblinaClasses.Quaternions;
 import com.mygdx.game.android.R;
+import com.mygdx.game.android.notifactions.HapticService;
 import com.mygdx.game.simulation.Simulation;
 
 //Java
@@ -98,6 +99,8 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private final static String TAG = BLEDeviceScanActivity.class.getSimpleName();
     private int mConnectionState = STATE_DISCONNECTED;
     public static final String ACTION_DATA_WRITE = "android.ble.common.ACTION_DATA_WRITE";
+
+    public boolean firstDevice = true;
 
     //Code Bluetooth Variables
     private BluetoothAdapter mBluetoothAdapter;
@@ -247,6 +250,15 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                                     mLeDeviceListAdapter.add(neblina.toString());
                                     mLeDeviceListAdapter.notifyDataSetChanged();
                                     mDeviceList.put(neblina.toString(), neblina);
+                                }
+                                if(firstDevice==true){ //Do only once
+
+//                                    Intent intent = new Intent(getApplicationContext(),HapticService.class);
+//                                    startService(intent);
+//
+//                                    HapticService.mNeblina=neblina;
+//                                    //start haptics service
+//                                    firstDevice = false;
                                 }
                             }
                         }
