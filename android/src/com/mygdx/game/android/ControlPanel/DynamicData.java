@@ -3,6 +3,7 @@ package com.mygdx.game.android.ControlPanel;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -20,6 +21,7 @@ import com.androidplot.xy.BarFormatter;
 import com.androidplot.xy.BarRenderer;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
+import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
 import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
@@ -91,8 +93,13 @@ public class DynamicData extends Activity {
         aprLevelsPlot.getRangeLabelWidget().pack();
         aprLevelsPlot.setGridPadding(15, 0, 15, 0);
 
+//        aprLevelsPlot.getBackground().setColorFilter(Color.WHITE,null);
+
         // setup the APR History plot:
         aprHistoryPlot = (XYPlot) findViewById(R.id.aprHistoryPlot);
+
+        aprHistoryPlot.getBackgroundPaint().setColor(Color.WHITE);
+
 
         azimuthHistorySeries = new SimpleXYSeries("Azimuth");
         azimuthHistorySeries.useImplicitXVals();
@@ -103,7 +110,19 @@ public class DynamicData extends Activity {
 
         aprHistoryPlot.setRangeBoundaries(-180, 359, BoundaryMode.FIXED);
         aprHistoryPlot.setDomainBoundaries(0, 30, BoundaryMode.FIXED);
-        aprHistoryPlot.addSeries(azimuthHistorySeries, new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, 0, null));//TODO: Fix Added random zeros???
+//        PointLabelFormatter laberFormatter = new PointLabelFormatter();
+        LineAndPointFormatter formatter = new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, 0, null);
+
+        Paint paint = formatter.getLinePaint();
+        paint.setStrokeWidth(75);
+
+        formatter.setLinePaint(paint);
+
+        aprHistoryPlot.addSeries(azimuthHistorySeries, formatter);//TODO: Fix Added random zeros???
+
+
+
+
         aprHistoryPlot.addSeries(pitchHistorySeries, new LineAndPointFormatter(Color.rgb(100, 200, 100), Color.BLACK, 0, null));
         aprHistoryPlot.addSeries(rollHistorySeries, new LineAndPointFormatter(Color.rgb(200, 100, 100), Color.BLACK, 0, null));
         aprHistoryPlot.setDomainStepValue(5);
@@ -224,6 +243,7 @@ public class DynamicData extends Activity {
         azimuthHistorySeries.addLast(null, valAX);
         pitchHistorySeries.addLast(null, valAY);
         rollHistorySeries.addLast(null, valAZ);
+
 
         // redraw the Plots:
         aprLevelsPlot.redraw();

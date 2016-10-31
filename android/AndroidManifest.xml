@@ -62,10 +62,6 @@
             android:label="@string/title_activity_dynamic_data" />
 
         <service
-            android:name=".Adapters.Haptics"
-            android:enabled="true"
-            android:exported="true" />
-        <service
             android:name=".notifactions.HapticsService"
             android:enabled="true"
             android:exported="true"></service>

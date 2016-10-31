@@ -43,7 +43,6 @@ import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
 import com.mygdx.game.android.NeblinaClasses.Neblina;
 import com.mygdx.game.android.NeblinaClasses.Quaternions;
 import com.mygdx.game.android.R;
-import com.mygdx.game.android.notifactions.HapticService;
 import com.mygdx.game.simulation.Simulation;
 
 //Java
@@ -63,12 +62,19 @@ import butterknife.OnClick;
     1. The BLE Device Scan List
     2. A Device detail fragment
     3. A game fragment
+
+  The process goes through the following steps:
+    A. OnCreate() is called which initializes the UI and starts the BLE Scan
+    B. Each scanned BLE device will be stored as a new Neblina object
+    C. The BLE Scan will return a list of BLE Devices that the user can select
+    D. When the user selects a BLE Device then onListItemClick is called. This connects to the
+        device and activtes a NebDeviceDetailFragment that can be used to send commands to it.
  */
 public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFragmentApplication.Callbacks{
 
     //Butterknife get views
     @InjectView(R.id.refreshButton) Button refreshButton;
-    @InjectView(R.id.cloudToggleButton) Button toggleButton;
+    @InjectView(R.id.dataVisualizationButton) Button toggleButton;
 
     //List Variables
     private List<String> mDeviceNameList;
@@ -87,48 +93,58 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     public static AndroidGetQ[] invaderInterfaces = new AndroidGetQ[MAX_BLE_DEVICES];
     public static int numberOfConnectedDevices = 0;
 
-    //GATT CALLBACK VARIABLES
+    //BLUETOOTH CONSTANTS
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
-    public final static String ACTION_GATT_CONNECTED = "com.inspirationindustry.motsaibluetooth.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED = "com.inspirationindustry.motsaibluetooth.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.inspirationindustry.motsaibluetooth.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE = "com.inspirationindustry.motsaibluetooth.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA = "com.inspirationindustry.motsaibluetooth.EXTRA_DATA";
     private final static String TAG = BLEDeviceScanActivity.class.getSimpleName();
-    private int mConnectionState = STATE_DISCONNECTED;
+    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 8;
+    public static final String ACTION_GATT_CONNECTED = "com.inspirationindustry.motsaibluetooth.ACTION_GATT_CONNECTED";
+    public static final String ACTION_GATT_DISCONNECTED = "com.inspirationindustry.motsaibluetooth.ACTION_GATT_DISCONNECTED";
+    public static final  String ACTION_GATT_SERVICES_DISCOVERED = "com.inspirationindustry.motsaibluetooth.ACTION_GATT_SERVICES_DISCOVERED";
+    public static final String ACTION_DATA_AVAILABLE = "com.inspirationindustry.motsaibluetooth.ACTION_DATA_AVAILABLE";
+    public static final String EXTRA_DATA = "com.inspirationindustry.motsaibluetooth.EXTRA_DATA";
     public static final String ACTION_DATA_WRITE = "android.ble.common.ACTION_DATA_WRITE";
 
+    //INITIALIZATION VARIABLES
     public boolean firstDevice = true;
 
-    //Code Bluetooth Variables
+    //BLUETOOTH CODE VARIABLES
+    private int mConnectionState = STATE_DISCONNECTED;
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
-    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 8;
 
+
+/************************************MAIN INITIALIZATION CODE********************************/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        for(int i = 0; i < MAX_BLE_DEVICES; i++){
-            invaderInterfaces[i] = new AndroidGetQ(i);
-        }
-
         //Main initialization code
-        activateBLE();
+        initializeSpaceshipInterface();
+        initializeBLE();
+
+        //Setup UI
         setContentView(R.layout.ble_scan_activity);
         ButterKnife.inject(this);
         setupFragmentAdapters();
-        scanLeDevice(true);
 
-        //What this activity does:
-        //A. Populate Bluetooth Device list via mLeScanCallback
-        //B. Wait for the user to choose a device
-        //C. Trigger onListItemClick to create a NebDeviceDetailFragment based on selection
+        //Start the BLE Scan
+        scanLeDevice(true);
     }
 
-    public void activateBLE() {
+
+    //This function sets up the lists needed for the Space Invaders Interface
+    private void initializeSpaceshipInterface() {
+        for(int i = 0; i < MAX_BLE_DEVICES; i++){
+            invaderInterfaces[i] = new AndroidGetQ(i);
+        }
+    }
+
+
+    //This function verifies that BLE is available, active, and that the app has necessary permissions
+    public void initializeBLE() {
+
         //Check that this device supports BLE
         if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
@@ -159,7 +175,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
 
-
         //Enable Bluetooth if required
         if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
@@ -167,6 +182,8 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         }
     }
 
+
+    //This sets up the adapters that will bridge the UI to the code
     private void setupFragmentAdapters() {
 
         //1. NeblinaDeviceList: Setup the BLE Devices list fragment and its adapter
@@ -180,6 +197,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     }
 
 
+    //This triggers the BLE scan
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             //stops scanning after a pre-defined period
@@ -198,31 +216,31 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         }
     }
 
-    @Override
-    public void onRestart(){
-        super.onRestart();
-    }
+/************************************END OF MAIN INITIALIZATION CODE********************************/
 
-    //Callback function for when a user chooses a BLE device
-    public void onListItemClick(String deviceKey) {
 
-        //Get the NEBLINA device and setup the NEBLINA interface
-        activeDevice = mDeviceList.get(deviceKey);
-        activeDevice.Connect(getBaseContext());
+/*********************************** CALLBACK FUNCTIONS *****************************************/
 
-        Bundle arguments = new Bundle();
-        arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
-        activeDeviceDelegate.SetItem(activeDevice);
+//Callback function for when a user chooses a BLE device
+public void onListItemClick(String deviceKey) {
 
-        //Tell the user he's connected
-        Toast.makeText(this, "Connecting to " + deviceKey, Toast.LENGTH_LONG).show();
-    }
+    //Get the NEBLINA device and setup the NEBLINA interface
+    activeDevice = mDeviceList.get(deviceKey);
+    activeDevice.Connect(getBaseContext());
+
+    Bundle arguments = new Bundle();
+    arguments.putParcelable(NebDeviceDetailFragment.ARG_ITEM_ID, activeDevice);
+    activeDeviceDelegate.SetItem(activeDevice);
+
+    //Tell the user he's connected
+    Toast.makeText(this, "Connecting to " + deviceKey, Toast.LENGTH_LONG).show();
+}
 
     //Callback for when a BLE device is found
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback(){
                 @Override
-            public void onLeScan(final BluetoothDevice device, int rssi, final byte[] scanRecord){
+                public void onLeScan(final BluetoothDevice device, int rssi, final byte[] scanRecord){
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -244,27 +262,67 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
                             //Add the device to the list if it isn't there already
                             if(device.getName() != null){
-
                                 Neblina neblina = new Neblina(deviceID,device);
                                 if (mDeviceList.containsKey(neblina.toString()) == false) {
                                     mLeDeviceListAdapter.add(neblina.toString());
                                     mLeDeviceListAdapter.notifyDataSetChanged();
                                     mDeviceList.put(neblina.toString(), neblina);
                                 }
-                                if(firstDevice==true){ //Do only once
-
-//                                    Intent intent = new Intent(getApplicationContext(),HapticService.class);
-//                                    startService(intent);
-//
-//                                    HapticService.mNeblina=neblina;
-//                                    //start haptics service
-//                                    firstDevice = false;
-                                }
                             }
                         }
                     });
                 }
             };
+
+
+    //This restarts the BLE scan. Useful when the app has been idle for some time.
+    @OnClick(R.id.refreshButton)void setRefreshButton(){
+        scanLeDevice(true);
+    }
+
+
+    //This starts the data visualization tools
+    @OnClick(R.id.dataVisualizationButton)void dataVisualization() {
+        Log.w("DEBUG", "Saving Time Data");
+
+        Intent intent = new Intent(this, DisplayActivity.class);
+        startActivity(intent);
+    }
+
+    //This is used when the user is granting permissions for BLE localization
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_COARSE_LOCATION: {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "coarse location permission granted");
+                } else {
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    builder.setTitle("Functionality limited");
+                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons when in the background.");
+                    builder.setPositiveButton(android.R.string.ok, null);
+                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+                        @Override
+                        public void onDismiss(DialogInterface dialog) {
+                        }
+
+                    });
+                    builder.show();
+                }
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void onRestart(){
+        super.onRestart();
+    }
+
+
+/************************************* HELPER FUNCTIONS *****************************************/
 
     public static boolean isInteger(String s, int radix) {
         if(s.isEmpty()) return false;
@@ -296,11 +354,9 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
     public static class GameFragment extends AndroidFragmentApplication
     {
-        // 5. Add the initializeForView() code in the Fragment's onCreateView method.
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            Log.w("PROGRAM FLOW", "IN GAME FRAGMENT onCreateView()!");
             return initializeForView(new Invaders(invaderInterfaces)); }
     }
 
@@ -323,29 +379,29 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                 @Override
                 public void run() {
                     Log.w("LogTag", "my ID is " + identityID);
-                        }
+                }
             });
 
             // Initialize the Cognito Sync client
-        CognitoSyncManager syncClient = new CognitoSyncManager(
-                getApplicationContext(),
-                Regions.US_EAST_1, // Region
-                credentialsProvider);
+            CognitoSyncManager syncClient = new CognitoSyncManager(
+                    getApplicationContext(),
+                    Regions.US_EAST_1, // Region
+                    credentialsProvider);
 
 // Create a record in a dataset and synchronize with the server
-        com.amazonaws.mobileconnectors.cognito.Dataset dataset = syncClient.openOrCreateDataset("myDataset");
-        dataset.put("myKey", "myValue");
-        dataset.synchronize(new DefaultSyncCallback() {
-            @Override
-            public void onSuccess(com.amazonaws.mobileconnectors.cognito.Dataset dataset, List newRecords) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.w("LogTag", "Creating a Record was successful!" + identityID);
-                    }
-                });
-            }
-        });
+            com.amazonaws.mobileconnectors.cognito.Dataset dataset = syncClient.openOrCreateDataset("myDataset");
+            dataset.put("myKey", "myValue");
+            dataset.synchronize(new DefaultSyncCallback() {
+                @Override
+                public void onSuccess(com.amazonaws.mobileconnectors.cognito.Dataset dataset, List newRecords) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Log.w("LogTag", "Creating a Record was successful!" + identityID);
+                        }
+                    });
+                }
+            });
 
             AmazonDynamoDBClient ddbClient = new AmazonDynamoDBClient(credentialsProvider);
             DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
@@ -366,44 +422,6 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
                 }
             });
             return null;
-        }
-    }
-
-    @OnClick(R.id.refreshButton)void setRefreshButton(){
-        scanLeDevice(true);
-    }
-
-    @OnClick(R.id.cloudToggleButton)void cloudToggle() {
-        Log.w("DEBUG", "Saving Time Data");
-
-        Intent intent = new Intent(this, DisplayActivity.class);
-        startActivity(intent);
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_COARSE_LOCATION: {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "coarse location permission granted");
-                } else {
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                    builder.setTitle("Functionality limited");
-                    builder.setMessage("Since location access has not been granted, this app will not be able to discover beacons when in the background.");
-                    builder.setPositiveButton(android.R.string.ok, null);
-                    builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
-
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                        }
-
-                    });
-                    builder.show();
-                }
-                return;
-            }
         }
     }
 

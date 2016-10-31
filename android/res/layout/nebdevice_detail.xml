@@ -83,7 +83,7 @@
             android:text="CloudToggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/cloudToggleButton"
+            android:id="@+id/dataVisualizationButton"
             android:layout_alignParentTop="true"
             android:layout_toEndOf="@+id/textView5" />
 

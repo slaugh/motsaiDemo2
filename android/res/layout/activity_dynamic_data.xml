@@ -55,9 +55,9 @@
                 android:layout_marginLeft="10px"
                 android:layout_marginRight="10px"
                 title="A/P/R History"
-                android:layout_height="500dp"
                 android:layout_alignParentEnd="true"
-                android:layout_above="@+id/future_button" />
+                android:layout_above="@+id/future_button"
+                android:layout_height="fill_parent" />
 
             <com.androidplot.xy.XYPlot
                 android:id="@+id/aprLevelsPlot"
@@ -67,7 +67,7 @@
                 android:layout_marginRight="10px"
                 title="A/P/R Levels"
                 android:layout_above="@+id/aprHistoryPlot"
-                android:layout_height="match_parent"
+                android:layout_height="0dp"
                 android:layout_below="@+id/linearLayout3" />
         </RelativeLayout>
     </LinearLayout>

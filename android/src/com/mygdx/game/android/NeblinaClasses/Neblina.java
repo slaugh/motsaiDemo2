@@ -237,7 +237,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             Log.w("BLUETOOTH DEBUG", "CONNECTION ESTABLISHED. " + connectedDevNum + " devices connected");
             gatt.discoverServices();
 
-//            putToMasterAlarmUrl();
+            putToMasterAlarmUrl();
         }
         else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             Log.w("BLUETOOTH DEBUG", "DISCONNECTED... BYE BYE!");
@@ -266,8 +266,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
             if(shouldPollRSSI){
                 //Poll RSSI
-                Timer myTimer = new Timer();
-                myTimer.scheduleAtFixedRate(new pollRSSI(),START_TIME,RETRY_TIME);
+                    Timer myTimer = new Timer();
+                    myTimer.scheduleAtFixedRate(new pollRSSI(),START_TIME,RETRY_TIME);
 
                 //Used for Jitter Tests
 //                myTimer.scheduleAtFixedRate(new JitterTest(),START_TIME+250,20);
@@ -283,6 +283,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             mBleGatt.readRemoteRssi();
             //TODO: Fix the fact that this is probably a blocking code with a callback version
         }
+    }
+
+    public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
+        Log.w("BLUETOOTH_DEBUG","RSSI is:" +  rssi);
+        putToPresenceUrl(rssi);
     }
 
 
@@ -316,7 +321,15 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             Response response = client.newCall(request).execute();
             Log.w("BLUETOOTH_DEBUG", "RECEIVED THE NOTIFICATION STATUS: " + response.body().toString());
             //TODO: Once API for getMotionUrl is finished -> Set motionStatus based on the result to either 0 or 1
+            if(response.body().toString()=="0"){
 
+            }else if(response.body().toString()=="1"){
+
+            }else if(response.body().toString()=="2"){
+
+            }else {
+
+            }
 
         } catch (IOException e){
             Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON!");
@@ -330,34 +343,34 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         int isPresent = 0;
         if (isPresent > -75) isPresent = 1; //TODO: add filtering and/or hysterisis
 
-        try {
-
-            OkHttpClient client = new OkHttpClient();
-
-            String json = "{\"presence\":\"" + isPresent + "\"}";
-            RequestBody body = RequestBody.create(JSON, json);
-            Request request = new Request.Builder()
-                    .url(putPresenceUrl)
-                    .put(body)
-                    .build();
-            Response response = client.newCall(request).execute();
-            Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
-
-
-            new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            putToAlarmUrl();
-                        }
-                    },
-                    5000
-            );
-
-            Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
-        } catch (IOException e){
-            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
-        }
+//        try {
+//
+//            OkHttpClient client = new OkHttpClient();
+//
+//            String json = "{\"presence\":\"" + isPresent + "\"}";
+//            RequestBody body = RequestBody.create(JSON, json);
+//            Request request = new Request.Builder()
+//                    .url(putPresenceUrl)
+//                    .put(body)
+//                    .build();
+//            Response response = client.newCall(request).execute();
+//            Log.w("BLUETOOTH_DEBUG", "Put to presence url: " + response.body().toString());
+//
+//
+//            new java.util.Timer().schedule(
+//                    new java.util.TimerTask() {
+//                        @Override
+//                        public void run() {
+//                            getFromNotificationUrl();
+//                        }
+//                    },
+//                    10
+//            );
+//
+//            Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
+//        } catch (IOException e){
+//            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
+//        }
     }
 
     public void putToMasterAlarmUrl(){
@@ -448,12 +461,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                     .build();
             Response response2 = client2.newCall(request2).execute();
         }catch (IOException e){}
-    }
-
-
-    public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
-        Log.w("BLUETOOTH_DEBUG","RSSI is:" +  rssi);
-        putToPresenceUrl(rssi);
     }
 
     //This is called as a confirmation of setting CharacteristicNotifications
@@ -1375,5 +1382,4 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         //By default start streaming quaternions
         streamQuaternion(true);
     }
-
 }
