@@ -28,9 +28,14 @@ import java.util.UUID;
 
 
 /* Each instance of this class corresponds to a BLE device found in BLEDeviceScanActivity
-   This class implements all of the GattCallbacks including:
+   1. This class implements all of the GattCallbacks including:
 
-   A. onConnectionStateChanged ()
+   A. onServicesDiscovered() called when a gatt object is received -> connects to the gatt services
+   B. onConnectionStateChanged() called when CONNECTED / DISCONECTED
+   C. onCharacteristicWrite() called when a response is received from a command
+   D. onCharacteristicChange() called when new data is received -> parses the responses
+
+   2. Implements functions for sending commands to Neblina devices
 
 
  */
