@@ -1,9 +1,5 @@
 package com.mygdx.game.android.NeblinaClasses;
 
-
-/**
- * Created by scott on 2016-06-27.
- */
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -31,8 +27,12 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 
-/**
- * Created by hoanmotsai on 2016-06-10.
+/* Each instance of this class corresponds to a BLE device found in BLEDeviceScanActivity
+   This class implements all of the GattCallbacks including:
+
+   A. onConnectionStateChanged ()
+
+
  */
 public class Neblina extends BluetoothGattCallback implements Parcelable {
     //NEBLINA CUSTOM UUIDs
@@ -50,7 +50,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte NEB_CTRL_PKTYPE_RQSTLOG	= 6;		// Request status/error log
     public static final byte NEB_CTRL_PKTYPE_RESERVE3	= 7;
 
-    // Subsystem values
+    //**
+    // SUBSYSTEM VALUES
     public static final byte NEB_CTRL_SUBSYS_DEBUG		= 0;		// Status & logging
     public static final byte NEB_CTRL_SUBSYS_MOTION_ENG	= 1;		// Motion Engine
     public static final byte NEB_CTRL_SUBSYS_POWERMGMT	= 2;		// Power management
@@ -63,13 +64,12 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte NEB_CTRL_SUBSYS_STORAGE    = 0x0B;		//NOR flash memory recorder
     public static final byte NEB_CTRL_SUBSYS_EEPROM		= 0x0C;		//small EEPROM storage
 
-    // ***
     // Power management subsystem command code
     public static final byte POWERMGMT_CMD_GET_BAT_LEVEL		= 0;	// Get battery level
     public static final byte POWERMGMT_CMD_GET_TEMPERATURE		= 1;	// Get temperature
     public static final byte POWERMGMT_CMD_SET_CHARGE_CURRENT	= 2;	// Set battery charge current
 
-    // ***
+    // **
     // Debug subsystem command code
     public static final byte DEBUG_CMD_PRINTF					        = 0;	// The infamous printf thing.
     public static final byte DEBUG_CMD_SET_INTERFACE					= 1;	// sets the protocol interface - this command is now obsolete
@@ -81,14 +81,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte DEBUG_CMD_STREAM_RSSI						= 7;	// get the BLE signal strength in db
     public static final byte DEBUG_CMD_GET_DATAPORT						= 8;	// Get streaming data interface port state.
     public static final byte DEBUG_CMD_SET_DATAPORT						= 9;	// Enable/Disable streaming data interface port
-    // ***
 
     // Data port control
     public static final byte DATAPORT_MAX	= 2;	// Max number of data port
-
     public static final byte DATAPORT_BLE	= 0; 	// streaming data port BLE
     public static final byte DATAPORT_UART	= 1;	//
-
     public static final byte DATAPORT_OPEN	= 1;	// Open streaming data port
     public static final byte DATAPORT_CLOSE	= 0;	// Close streaming data port
 
@@ -108,6 +105,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte LED_CMD_SET_VALUE      = 1;
     public static final byte LED_CMD_GET_VALUE      = 2;
 
+    //**
     // Motion engine commands
     public static final byte MOTION_CMD_DOWN_SAMPLE         = 0x01;
     public static final byte MOTION_CMD_MOTION_STATE        = 0x02;
@@ -117,7 +115,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public static final byte MOTION_CMD_EXTFORCE            = 0x06;
     public static final byte MOTION_CMD_SET_FUSION_TYPE     = 0x07;
     public static final byte MOTION_CMD_TRAJECTORY_RECORD   = 0x08;
-    //#define TrajectoryRecStop 0x09
     public static final byte MOTION_CMD_TRAJECTORY_INFO		= 0x09;
     public static final byte MOTION_CMD_PEDOMETER           = 0x0A;
     public static final byte MOTION_CMD_MAG_DATA            = 0x0B;
@@ -166,7 +163,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     private long writeDelay;
     private long onDescWriteTime;
 
-    //////// Cooperathon Variables ////////
+/************************************* Hackathon Variables ************************************/
     private int motionStatus = 1;
     private int rssiThreshold = -75;
     public static final MediaType JSON
@@ -184,16 +181,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     //Igor's URLs
     private String triggerAlarmUrl= "http://hsj_dev/api/V1/movement/patient.php";
 
+/************************************* Constructor Function ****************************************/
 
-    public void SetDelegate(NeblinaDelegate neblinaDelegate) {
-        mDelegate = neblinaDelegate;
-    }
-
-    @Override
-    public String toString() {
-        return Nebdev.getName() + "_" + Long.toHexString(DevId).toUpperCase();
-    }
-
+    //Constructor
     public Neblina(long id, BluetoothDevice dev) {
         Nebdev = dev;
         DevId = id;
@@ -202,94 +192,25 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         mCtrlChar = null;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (DevId == ((Neblina)obj).DevId)
-            return true;
-        return false;
-    }
 
-    public boolean isDeviceReady() {
-        if (Nebdev == null)
-            return false;
-        return true;
-    }
-
-    public boolean Connect(Context ctext) {
-        mBleGatt = Nebdev.connectGatt(ctext, false, this);
-        return mBleGatt != null;
-    }
-
-    public void Disconnect() {
-        mBleGatt.disconnect();
-        mBleGatt = null;
-    }
-
-    // Here are where the BluetoothGattCallbacks are
-    @Override
-    public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-        String intentAction;
-        if (newState == BluetoothProfile.STATE_CONNECTED) {
-
-            connectedDevNum = BLEDeviceScanActivity.numberOfConnectedDevices;
-            Simulation.ships[connectedDevNum].isActive = true;
-            BLEDeviceScanActivity.numberOfConnectedDevices++;
-            Log.w("BLUETOOTH DEBUG", "CONNECTION ESTABLISHED. " + connectedDevNum + " devices connected");
-            gatt.discoverServices();
-
-            putToMasterAlarmUrl();
-        }
-        else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            Log.w("BLUETOOTH DEBUG", "DISCONNECTED... BYE BYE!");
-            connectedDevNum = -1;
-            BLEDeviceScanActivity.numberOfConnectedDevices--;
-        }
-
-    }
-
-    @Override
-    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-        if (status == BluetoothGatt.GATT_SUCCESS) {
-            //Get the characteristic from the discovered gatt server
-            Log.w("BLUETOOTH DEBUG", "SERVICES DISCOVERED!");
-            BluetoothGattService service = gatt.getService(NEB_SERVICE_UUID);
-
-            //Get the DATA characteristic and set notifications on
-            BluetoothGattCharacteristic data_characteristic = service.getCharacteristic(NEB_DATACHAR_UUID);
-            mCtrlChar = service.getCharacteristic(NEB_CTRLCHAR_UUID);
-            gatt.setCharacteristicNotification(data_characteristic, true);
-            List<BluetoothGattDescriptor> descriptors = data_characteristic.getDescriptors();
-            BluetoothGattDescriptor descriptor = descriptors.get(0);
-            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-            mBleGatt.writeDescriptor(descriptor);
-            writeDescriptorTimestamp = System.currentTimeMillis();
-
-            if(shouldPollRSSI){
-                //Poll RSSI
-                    Timer myTimer = new Timer();
-                    myTimer.scheduleAtFixedRate(new pollRSSI(),START_TIME,RETRY_TIME);
-
-                //Used for Jitter Tests
-//                myTimer.scheduleAtFixedRate(new JitterTest(),START_TIME+250,20);
-            }
-        }
-    }
-
+/************************************** Timing Tests and RSSI Functions ******************************/
 
     public class pollRSSI extends TimerTask {
 
         @Override
         public void run() {
             mBleGatt.readRemoteRssi();
-            //TODO: Fix the fact that this is probably a blocking code with a callback version
         }
     }
 
+    //Called when the results of readRemoteRssi() get back
     public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status){
         Log.w("BLUETOOTH_DEBUG","RSSI is:" +  rssi);
+
+
+        //TODO: YOU CAN TEST COOPERATHON API CALLS HERE
         putToPresenceUrl(rssi);
     }
-
 
     public class JitterTest extends  TimerTask {
         @Override
@@ -298,19 +219,23 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
     }
 
-    public void getFromMotionUrl(){
-        try {
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(getMotionUrl) //TODO: Phase this out because we are getting this through the notification
-                    .build();
-            Response response = client.newCall(request).execute();
-            Log.w("BLUETOOTH_DEBUG", "RECEIVED THE MOTION STATUS: " + response.body().toString());
-            //TODO: Once API for getMotionUrl is finished -> Set motionStatus based on the result to either 0 or 1
-        } catch (IOException e){
-            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON!");
-        }
-    }
+/****************************************HACKATHON API CALLS *************************************/
+
+
+//    public void getFromMotionUrl(){
+//        try {
+//            OkHttpClient client = new OkHttpClient();
+//            Request request = new Request.Builder()
+//                    .url(getMotionUrl)
+//                    .build();
+//            Response response = client.newCall(request).execute();
+//            Log.w("BLUETOOTH_DEBUG", "RECEIVED THE MOTION STATUS: " + response.body().toString());
+
+//        } catch (IOException e){
+//            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON!");
+//        }
+//    }
+
 
     public void getFromNotificationUrl(){
         try {
@@ -322,55 +247,48 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             Log.w("BLUETOOTH_DEBUG", "RECEIVED THE NOTIFICATION STATUS: " + response.body().toString());
             //TODO: Once API for getMotionUrl is finished -> Set motionStatus based on the result to either 0 or 1
             if(response.body().toString()=="0"){
-
             }else if(response.body().toString()=="1"){
-
             }else if(response.body().toString()=="2"){
-
             }else {
-
             }
-
         } catch (IOException e){
             Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON!");
         }
     }
 
 
-
-
     public void putToPresenceUrl(int rssi){
         int isPresent = 0;
         if (isPresent > -75) isPresent = 1; //TODO: add filtering and/or hysterisis
 
-//        try {
-//
-//            OkHttpClient client = new OkHttpClient();
-//
-//            String json = "{\"presence\":\"" + isPresent + "\"}";
-//            RequestBody body = RequestBody.create(JSON, json);
-//            Request request = new Request.Builder()
-//                    .url(putPresenceUrl)
-//                    .put(body)
-//                    .build();
-//            Response response = client.newCall(request).execute();
-//            Log.w("BLUETOOTH_DEBUG", "Put to presence url: " + response.body().toString());
-//
-//
-//            new java.util.Timer().schedule(
-//                    new java.util.TimerTask() {
-//                        @Override
-//                        public void run() {
-//                            getFromNotificationUrl();
-//                        }
-//                    },
-//                    10
-//            );
-//
-//            Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
-//        } catch (IOException e){
-//            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
-//        }
+        try {
+
+            OkHttpClient client = new OkHttpClient();
+
+            String json = "{\"presence\":\"" + isPresent + "\"}";
+            RequestBody body = RequestBody.create(JSON, json);
+            Request request = new Request.Builder()
+                    .url(putPresenceUrl)
+                    .put(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            Log.w("BLUETOOTH_DEBUG", "Put to presence url: " + response.body().toString());
+
+
+            new java.util.Timer().schedule(
+                    new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            getFromNotificationUrl();
+                        }
+                    },
+                    10
+            );
+
+            Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
+        } catch (IOException e){
+            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
+        }
     }
 
     public void putToMasterAlarmUrl(){
@@ -432,8 +350,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     }
 
 
-
-    //TODO: Implement Callback that will call Snooze when acknowledged (in service???)
     public void postToSnoozeUrl(){
         try {
             OkHttpClient client2 = new OkHttpClient();
@@ -448,8 +364,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     }
 
 
-
-
     public void putToAlarmUrl(){
         try {
             OkHttpClient client2 = new OkHttpClient();
@@ -462,6 +376,57 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             Response response2 = client2.newCall(request2).execute();
         }catch (IOException e){}
     }
+/******************************** GATT CALLBACKS *************************************************/
+
+    //Called when Gatt changed to CONNECTED or DISCONNECTED. This adds a Spaceship to the visualization
+    @Override
+    public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+        String intentAction;
+        if (newState == BluetoothProfile.STATE_CONNECTED) {
+            connectedDevNum = BLEDeviceScanActivity.numberOfConnectedDevices;
+            Simulation.ships[connectedDevNum].isActive = true;
+            BLEDeviceScanActivity.numberOfConnectedDevices++;
+            Log.w("BLUETOOTH DEBUG", "CONNECTION ESTABLISHED. " + connectedDevNum + " devices connected");
+            gatt.discoverServices();
+        }
+        else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            Log.w("BLUETOOTH DEBUG", "DISCONNECTED... BYE BYE!");
+            connectedDevNum = -1;
+            BLEDeviceScanActivity.numberOfConnectedDevices--;
+        }
+
+    }
+
+
+    //Called when Gatt services are discovered
+    @Override
+    public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+        if (status == BluetoothGatt.GATT_SUCCESS) {
+            //Get the characteristic from the discovered gatt server
+            Log.w("BLUETOOTH DEBUG", "SERVICES DISCOVERED!");
+            BluetoothGattService service = gatt.getService(NEB_SERVICE_UUID);
+
+            //Get the DATA characteristic and set notifications on
+            BluetoothGattCharacteristic data_characteristic = service.getCharacteristic(NEB_DATACHAR_UUID);
+            mCtrlChar = service.getCharacteristic(NEB_CTRLCHAR_UUID);
+            gatt.setCharacteristicNotification(data_characteristic, true);
+            List<BluetoothGattDescriptor> descriptors = data_characteristic.getDescriptors();
+            BluetoothGattDescriptor descriptor = descriptors.get(0);
+            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mBleGatt.writeDescriptor(descriptor);
+            writeDescriptorTimestamp = System.currentTimeMillis();
+
+            if(shouldPollRSSI){
+                //Poll RSSI
+                    Timer myTimer = new Timer();
+                    myTimer.scheduleAtFixedRate(new pollRSSI(),START_TIME,RETRY_TIME);
+
+                //Used for Jitter Tests
+//                myTimer.scheduleAtFixedRate(new JitterTest(),START_TIME+250,20);
+            }
+        }
+    }
+
 
     //This is called as a confirmation of setting CharacteristicNotifications
     @Override
@@ -479,6 +444,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
     }
 
+
+    //Called when the writing of a characteristic returns an acknowledgement
     @Override
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
         switch (initializeState){
@@ -517,21 +484,17 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         }
     }
 
-    @Override
-    public void onCharacteristicRead (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
-        Log.w("BLUETOOTH_DEBUG","OnCharacteristicRead! :D");
-
-    }
-
-    //PROCESS RECEIVED PACKETS
+    //Called when a new characteristic value arrives such as Quaternions or IMU stream values
     @Override
     public void onCharacteristicChanged (BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic) {
 
+        //Check to see if delegate is assigned
         if (mDelegate == null) {
             return;
         }
 
+        //PARSE HEADERS FROM RECEIVED PACKETS
         final byte[] pkt =  characteristic.getValue();
         int subsys = pkt[0] & 0x1f;
         final int pktype = pkt[0] >> 5;
@@ -553,16 +516,18 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             data[i] = pkt[i+4];
 
 
+        //Now process the packet depending on the header values
         switch (subsys) {
             case NEB_CTRL_SUBSYS_DEBUG:		// Status & logging
                 mDelegate.didReceiveDebugData(pkt[3], data, datalen, errFlag);
                 break;
+
             case NEB_CTRL_SUBSYS_MOTION_ENG:// Motion Engine
 
-//                currentTime = System.nanoTime();  //Requires about 100 clock cycles
+                //JITTER TEST CODE
+//                currentTime = System.nanoTime();  //Alternative Time() -> Requires about 100 clock cycles
                 currentTime = System.currentTimeMillis(); //Requires about 5 clock cycles
                 delayTime = currentTime - lastTime;
-
                 if(isTimeinitializing!=true) {
                     if(file_size1 < size_max){
                         delayTimeArray[file_size1]=delayTime;
@@ -573,34 +538,39 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 }
                 lastTime = currentTime;
 
-
+                //Let the delegate handle the call
                 mDelegate.didReceiveFusionData(pkt[3], data, errFlag, connectedDevNum);
                 break;
+
             case NEB_CTRL_SUBSYS_POWERMGMT:	// Power management
                 mDelegate.didReceivePmgntData(pkt[3], data,  datalen, errFlag);
                 break;
+
             case NEB_CTRL_SUBSYS_LED:		// LED control
 
+                //ROUND TRIP TIME TEST CODE
                 returnTime = System.currentTimeMillis();
-                Log.w("BLUETOOTH DEBUG", "LED STATE RETURNED");
                 if(file_size2 < size_max){
                     roundTripTimeArray[file_size2] = returnTime - sentTime;
                     file_size2++;
                 }
 
+                //Normal parsing
                 mDelegate.didReceiveLedData(pkt[3], data,  datalen, errFlag);
                 break;
             case NEB_CTRL_SUBSYS_STORAGE:	//NOR flash memory recorder
                 mDelegate.didReceiveStorageData(pkt[3], data,  datalen, errFlag);
                 break;
+
             case NEB_CTRL_SUBSYS_EEPROM:	//small EEPROM storage
                 mDelegate.didReceiveEepromData(pkt[3], data,  datalen, errFlag);
                 break;
+
         }
     }
 
 
-    // PACKET CREATION CALLS
+/*********************************** SEND COMMAND CALLS **********************************/
     public void getDataPortState() {
         if (isDeviceReady() == false) {
             return;
@@ -1344,7 +1314,55 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     }
 
 
-    //PARCELABLE INTERFACE FUNCTIONS
+    /************************************* Helper Functions ****************************************/
+
+    @Override
+    public boolean equals(Object obj) {
+        if (DevId == ((Neblina)obj).DevId)
+            return true;
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return Nebdev.getName() + "_" + Long.toHexString(DevId).toUpperCase();
+    }
+
+
+    public void SetDelegate(NeblinaDelegate neblinaDelegate) {
+        mDelegate = neblinaDelegate;
+    }
+
+
+    public boolean isDeviceReady() {
+        if (Nebdev == null)
+            return false;
+        return true;
+    }
+
+    public boolean Connect(Context ctext) {
+        mBleGatt = Nebdev.connectGatt(ctext, false, this);
+        return mBleGatt != null;
+    }
+
+    public void Disconnect() {
+        mBleGatt.disconnect();
+        mBleGatt = null;
+    }
+
+    //Get initial state information and turn on Quaternions
+    public void initializeNeblina() {
+        //Get device states
+        getFirmwareVersion();
+        getMotionStatus();
+        getDataPortState();
+        getLed();
+        //By default start streaming quaternions
+        streamQuaternion(true);
+    }
+
+
+/****************************PARCELABLE INTERFACE FUNCTIONS***************************************/
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeValue(Nebdev);
@@ -1370,16 +1388,5 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         mBleGatt = (BluetoothGatt) in.readValue(null);
         mDelegate = (NeblinaDelegate) in.readValue(null);
         mCtrlChar = (BluetoothGattCharacteristic) in.readValue(null);
-    }
-
-    //Get initial state information and turn on Quaternions
-    public void initializeNeblina() {
-        //Get device states
-        getFirmwareVersion();
-        getMotionStatus();
-        getDataPortState();
-        getLed();
-        //By default start streaming quaternions
-        streamQuaternion(true);
     }
 }
