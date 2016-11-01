@@ -58,12 +58,10 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     private Neblina mNebDev;
 
-//    public static DynamicData dynamicData;
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
+     // The fragment argument representing the item ID that this fragment represents.
     public static final String ARG_ITEM_ID = "item_id";
+
+    // Adding one line will create a new button that relates to the different Neblina Commands
     public static final NebCmdItem[] cmdList = new NebCmdItem[] {
             new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "BLE Data Port", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "UART Data Port", 1, ""),
@@ -95,13 +93,11 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     private TextView mVersionText;
     private ListView mCmdListView;
 
-    //Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes)
+    //Static Store for all the Spaceship quaternion values
     public static float[] latest_Q0s = new float[Simulation.MAX_SHIPS];
     public static float[] latest_Q1s = new float[Simulation.MAX_SHIPS];
     public static float[] latest_Q2s = new float[Simulation.MAX_SHIPS];
     public static float[] latest_Q3s = new float[Simulation.MAX_SHIPS];
-
-
     public static String Q0_string = "";
     public static String Q1_string = "";
     public static String Q2_string = "";
@@ -112,18 +108,18 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static DynamicData dynamicDataActivity;
     public static boolean upAndRunning = false;
 
-
-    //Default Constructor
+    //Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes)
     public NebDeviceDetailFragment() {
     }
 
     //Maps a specific Neblina device to the Detail List Fragment
     public void SetItem(Neblina item) {
-
         mNebDev = item;
         mNebDev.SetDelegate(this);
     }
 
+
+    //Default onCreate() function
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -370,15 +366,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
         }
     }
 
-    private float normalizedQ(byte[] q) {
-        if(q.length==2){
-            int val = ((q[1]&0xff)<<8)|(q[0]&0xff); //concatenate the byte array into an int
-            float normalized = (float) val / 32768; //normalize by dividing by 2^15
-            if (normalized > 1.0) normalized = normalized-2;
-            return normalized;
-        }else return -1;
-    }
-
     public void didReceiveDebugData(int type, final byte[] data, int dataLen, boolean errFlag) {
 
         Log.w("BLUETOOTH DEBUG", "RECEIVING DEBUG INFORMATION!");
@@ -568,19 +555,19 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
         }
     }
     public void didReceivePmgntData(int type, byte[] data, int dataLen, boolean errFlag) {
-
+        //Implement what you want to do with the data here
     }
     public void didReceiveStorageData(int type, byte[] data, int dataLen, boolean errFlag) {
-
+        //Implement what you want to do with the data here
     }
     public void didReceiveEepromData(int type, byte[] data, int dataLen, boolean errFlag) {
-
+        //Implement what you want to do with the data here
     }
     public void didReceiveLedData(int type, byte[] data, int dataLen, boolean errFlag) {
-        Log.w("BLUETOOTH DEBUG", "DID RECEIVE LED DATA");
+        //Implement what you want to do with the data here
     }
 
-    //Helper function
+    /*************************************** Helper function *************************************/
     public int getCmdIdx(int subsysId, int cmdId) {
         for (int i = 0; i < cmdList.length; i++) {
             if (cmdList[i].mSubSysId == subsysId && cmdList[i].mCmdId == cmdId) {
@@ -588,5 +575,14 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             }
         }
         return -1;
+    }
+
+    private float normalizedQ(byte[] q) {
+        if(q.length==2){
+            int val = ((q[1]&0xff)<<8)|(q[0]&0xff); //concatenate the byte array into an int
+            float normalized = (float) val / 32768; //normalize by dividing by 2^15
+            if (normalized > 1.0) normalized = normalized-2;
+            return normalized;
+        }else return -1;
     }
 }

@@ -19,6 +19,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <supports-gl-texture android:name="GL_OES_compressed_ETC1_RGB8_texture" />
     <supports-gl-texture android:name="GL_OES_compressed_paletted_texture" />
@@ -62,7 +63,7 @@
             android:label="@string/title_activity_dynamic_data" />
 
         <service
-            android:name=".notifactions.HapticsService"
+            android:name=".notifactions.HapticService"
             android:enabled="true"
             android:exported="true"></service>
     </application>

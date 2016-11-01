@@ -8,11 +8,13 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
 import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
+import com.mygdx.game.android.notifactions.HapticService;
 import com.mygdx.game.simulation.Simulation;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -169,24 +171,28 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     private long onDescWriteTime;
 
 /************************************* Hackathon Variables ************************************/
-    private int motionStatus = 1;
-    private int rssiThreshold = -75;
+    private int rssiLowerThreshold = -90;
+    private int rssiUpperThreshold = -75;
+    private int isPresent = 1;
+
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
     //Paul's URLs
     private String alarmState = "0";
     private String alarmEventUrl = "http://10.92.0.85:3000/api/alarm";
     private String getMotionUrl = "http://requestb.in/1h67p571";
-    private String putPresenceUrl = "http://10.92.0.85:3000/api/presence";
-    private String postSnoozeUrl = "http://10.92.0.85:3000/api/snooze";
-    private String getNotificationUrl = "http://10.92.0.85:3000/api/notification";
+//    private String putPresenceUrl = "http://10.92.0.85:3000/api/presence"; //Paul's version
+    private String putPresenceUrl = "http://requestb.in/19wezdi1"; //Test version
+    //Igor's URLs
+    private String triggerAlarmUrl= "http://hsj_dev/api/V1/movement/patient.php"; //Final Version
+    private  boolean initializingService = true;
+
 
     private int alarmStatus = 0; //0 is off, 1 is notification, 2 is master alarm
 
-    //Igor's URLs
-    private String triggerAlarmUrl= "http://hsj_dev/api/V1/movement/patient.php";
 
-/************************************* Constructor Function ****************************************/
+
+    /************************************* Constructor Function ****************************************/
 
     //Constructor
     public Neblina(long id, BluetoothDevice dev) {
@@ -198,7 +204,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     }
 
 
-/************************************** Timing Tests and RSSI Functions ******************************/
+/********************************** Timing Tests and RSSI Functions ******************************/
 
     public class pollRSSI extends TimerTask {
 
@@ -214,7 +220,13 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
 
         //TODO: YOU CAN TEST COOPERATHON API CALLS HERE
-        putToPresenceUrl(rssi);
+        if(initializingService==true){
+            initializingService = false;
+            HapticService.mNeblina = this;
+        }
+
+
+        putToPresenceUrl(rssi); //Main call to
     }
 
     public class JitterTest extends  TimerTask {
@@ -225,7 +237,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     }
 
 /****************************************HACKATHON API CALLS *************************************/
-
 
 //    public void getFromMotionUrl(){
 //        try {
@@ -242,29 +253,16 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 //    }
 
 
-    public void getFromNotificationUrl(){
-        try {
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(getNotificationUrl) //TODO: Phase this out because we are getting this through the notification
-                    .build();
-            Response response = client.newCall(request).execute();
-            Log.w("BLUETOOTH_DEBUG", "RECEIVED THE NOTIFICATION STATUS: " + response.body().toString());
-            //TODO: Once API for getMotionUrl is finished -> Set motionStatus based on the result to either 0 or 1
-            if(response.body().toString()=="0"){
-            }else if(response.body().toString()=="1"){
-            }else if(response.body().toString()=="2"){
-            }else {
-            }
-        } catch (IOException e){
-            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON!");
-        }
-    }
-
 
     public void putToPresenceUrl(int rssi){
-        int isPresent = 0;
-        if (isPresent > -75) isPresent = 1; //TODO: add filtering and/or hysterisis
+
+
+        if (rssi >= rssiUpperThreshold) {
+            isPresent = 1; //TODO: add filtering and/or hysterisis
+        } else if (rssi >= rssiLowerThreshold){
+            //is Present stays where it is
+        } else isPresent = 0;
+
 
         try {
 
@@ -280,15 +278,15 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             Log.w("BLUETOOTH_DEBUG", "Put to presence url: " + response.body().toString());
 
 
-            new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            getFromNotificationUrl();
-                        }
-                    },
-                    10
-            );
+//            new java.util.Timer().schedule(
+//                    new java.util.TimerTask() {
+//                        @Override
+//                        public void run() {
+//                            getFromNotificationUrl();
+//                        }
+//                    },
+//                    10
+//            );
 
             Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
         } catch (IOException e){
@@ -321,7 +319,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
             Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
         } catch (IOException e){
-            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
+            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON3!"+e.toString());
         }
     }
 
@@ -350,23 +348,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
             Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
         } catch (IOException e){
-            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
+            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON4!"+e.toString());
         }
     }
 
-
-    public void postToSnoozeUrl(){
-        try {
-            OkHttpClient client2 = new OkHttpClient();
-            String json = "";
-            RequestBody body = RequestBody.create(JSON, json);
-            Request request = new Request.Builder()
-                    .url(postSnoozeUrl)
-                    .post(body)
-                    .build();
-            Response response2 = client2.newCall(request).execute();
-        }catch (IOException e){}
-    }
 
 
     public void putToAlarmUrl(){

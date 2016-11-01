@@ -43,6 +43,7 @@ import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
 import com.mygdx.game.android.NeblinaClasses.Neblina;
 import com.mygdx.game.android.NeblinaClasses.Quaternions;
 import com.mygdx.game.android.R;
+import com.mygdx.game.android.notifactions.HapticService;
 import com.mygdx.game.simulation.Simulation;
 
 //Java
@@ -131,6 +132,10 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
         //Start the BLE Scan
         scanLeDevice(true);
+
+        //Hackathon Background Service for acknowledging messages
+        Intent intent = new Intent(this,HapticService.class);
+        this.startService(intent);
     }
 
 
@@ -361,6 +366,13 @@ public void onListItemClick(String deviceKey) {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Intent intent = new Intent(this,HapticService.class);
+        this.stopService(intent);
+    }
+
+    @Override
     public void exit() {}
 
     public class getAWSID extends AsyncTask<String, Void, Void> {
@@ -424,6 +436,7 @@ public void onListItemClick(String deviceKey) {
             return null;
         }
     }
+
 
     }
 
