@@ -8,7 +8,6 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -264,35 +263,36 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             //is Present stays where it is
         } else isPresent = 0;
 
+        if(BLEDeviceScanActivity.enableHackathon==true){
+                try {
 
-        try {
+                    OkHttpClient client = new OkHttpClient();
 
-            OkHttpClient client = new OkHttpClient();
-
-            String json = "{\"presence\":\"" + isPresent + "\"}";
-            RequestBody body = RequestBody.create(JSON, json);
-            Request request = new Request.Builder()
-                    .url(putPresenceUrl)
-                    .put(body)
-                    .build();
-            Response response = client.newCall(request).execute();
-            Log.w("BLUETOOTH_DEBUG", "Put to presence url: " + response.body().toString());
+                    String json = "{\"presence\":\"" + isPresent + "\"}";
+                    RequestBody body = RequestBody.create(JSON, json);
+                    Request request = new Request.Builder()
+                            .url(putPresenceUrl)
+                            .put(body)
+                            .build();
+                    Response response = client.newCall(request).execute();
+                    Log.w("BLUETOOTH_DEBUG", "Put to presence url: " + response.body().toString());
 
 
-//            new java.util.Timer().schedule(
-//                    new java.util.TimerTask() {
-//                        @Override
-//                        public void run() {
-//                            getFromNotificationUrl();
-//                        }
-//                    },
-//                    10
-//            );
+        //            new java.util.Timer().schedule(
+        //                    new java.util.TimerTask() {
+        //                        @Override
+        //                        public void run() {
+        //                            getFromNotificationUrl();
+        //                        }
+        //                    },
+        //                    10
+        //            );
 
-            Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
-        } catch (IOException e){
-            Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
-        }
+                    Log.w("BLUETOOTH_DEBUG", "PULLED THE TRIGGER: " + response.body().toString());
+                } catch (IOException e){
+                    Log.w("BLUETOOTH_DEBUG","DANGER! WILL ROBINSON2!"+e.toString());
+                }
+            }
     }
 
     public void putToMasterAlarmUrl(){
@@ -356,16 +356,18 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
 
     public void putToAlarmUrl(){
-        try {
-            OkHttpClient client2 = new OkHttpClient();
-            String json2 = "{\"Alarm\":\"" + alarmState + "\"}";
-            RequestBody body2 = RequestBody.create(JSON, json2);
-            Request request2 = new Request.Builder()
-                    .url(alarmEventUrl)
-                    .put(body2)
-                    .build();
-            Response response2 = client2.newCall(request2).execute();
-        }catch (IOException e){}
+        if(BLEDeviceScanActivity.enableHackathon==true){
+            try {
+                OkHttpClient client2 = new OkHttpClient();
+                String json2 = "{\"Alarm\":\"" + alarmState + "\"}";
+                RequestBody body2 = RequestBody.create(JSON, json2);
+                Request request2 = new Request.Builder()
+                        .url(alarmEventUrl)
+                        .put(body2)
+                        .build();
+                Response response2 = client2.newCall(request2).execute();
+            }catch (IOException e){}
+        }
     }
 /******************************** GATT CALLBACKS *************************************************/
 
@@ -570,8 +572,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_DEBUG); // 0x40
         pkbuf[1] = 0;	// Data len
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = DEBUG_CMD_GET_DATAPORT;	// Cmd
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
@@ -587,8 +591,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_DEBUG);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = DEBUG_CMD_GET_FW_VERSION;	// Cmd
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
@@ -604,8 +610,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_DEBUG);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
+//        pkbuf[2] = 104;
         pkbuf[3] = DEBUG_CMD_MOTENGINE_RECORDER_STATUS;	// Cmd
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
@@ -621,8 +630,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_DEBUG);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = DEBUG_CMD_MOTENGINE_RECORDER_STATUS;	// Cmd
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         boolean isWriteSuccessful = mBleGatt.writeCharacteristic(mCtrlChar);
@@ -638,13 +649,15 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_DEBUG); // 0x40
         pkbuf[1] = 2;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = DEBUG_CMD_SET_DATAPORT;	// Cmd
 
         // Port = 0 : BLE
         // Port = 1 : UART
         pkbuf[4] = (byte)PortIdx;
         pkbuf[5] = Ctrl;		// 1 - Open, 0 - Close
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
@@ -701,7 +714,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_EEPROM);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = EEPROM_CMD_WRITE; // Cmd
 
         pkbuf[4] = (byte)(pageNo & 0xff);
@@ -710,6 +723,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         for (int i = 0; i < 8; i += 1) {
             pkbuf[i + 6] = data[i];
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
@@ -726,11 +741,12 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_LED);
         pkbuf[1] = 0;	// Data length
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = LED_CMD_GET_VALUE;	// Cmd
 
-        mCtrlChar.setValue(pkbuf);
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
+        mCtrlChar.setValue(pkbuf);
         sentTime = System.currentTimeMillis();
         boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
         Log.w("BLUETOOTH DEBUG", "Writing GET LED state: " + success);
@@ -745,7 +761,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_LED);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = LED_CMD_SET_VALUE;	// Cmd
 
         // Nb of LED to set
@@ -753,6 +769,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         pkbuf[5] = LedNo;
         pkbuf[6] = Value;
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -767,8 +784,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_POWERMGMT);
         pkbuf[1] = 0;	// Data length
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = POWERMGMT_CMD_GET_TEMPERATURE;	// Cmd
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
@@ -783,13 +802,14 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_POWERMGMT);
         pkbuf[1] = 2;	// Data length
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = POWERMGMT_CMD_SET_CHARGE_CURRENT;	// Cmd
 
         // Data
         pkbuf[4] = (byte)(Current & 0xFF);
         pkbuf[5] = (byte)((Current >> 8) & 0xFF);
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -804,10 +824,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_SET_ACC_RANGE;	// Cmd
         pkbuf[8] = Mode;
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -821,12 +842,13 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_SET_FUSION_TYPE;	// Cmd
 
         // Data
         pkbuf[8] = Mode;
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -840,9 +862,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_LOCK_HEADING_REF;	// Cmd
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -858,8 +881,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG);
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_DISABLE_ALL_STREAM;	// Cmd
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
 
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
@@ -875,7 +900,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_EULER_ANGLE; // Cmd
 
         if (Enable == true)
@@ -887,6 +912,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             pkbuf[8] = 0;
         }
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -901,7 +927,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_EXTFORCE;	// Cmd
 
         if (Enable == true)
@@ -912,6 +938,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -926,7 +954,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_IMU_DATA;	// Cmd
 
         if (Enable == true)
@@ -937,6 +965,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -951,7 +981,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_MAG_DATA;	// Cmd
 
         if (Enable == true)
@@ -962,6 +992,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -976,7 +1008,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16; //UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_MOTION_STATE;	// Cmd
 
         if (Enable == true)
@@ -987,6 +1019,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1001,7 +1035,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_PEDOMETER; // Cmd
 
         if (Enable == true)
@@ -1012,6 +1046,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1028,7 +1064,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_QUATERNION;	// Cmd
 
         if (Enable == true)
@@ -1039,6 +1075,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
         Log.w("BLUETOOTH_DEBUG","Write Stream Quaternions: " + success);
@@ -1055,7 +1093,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_DOWN_SAMPLE;	// Cmd
 
         if (Enable == true)
@@ -1066,6 +1104,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         boolean success = mBleGatt.writeCharacteristic(mCtrlChar);
         Log.w("BLUETOOTH_DEBUG","Write CMD Down Sample: " + success);
@@ -1080,7 +1120,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_ROTATION_INFO;	// Cmd
 
         if (Enable == true)
@@ -1091,6 +1131,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1104,7 +1146,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t));
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_SIT_STAND;	// Cmd
 
         if (Enable == true)
@@ -1115,6 +1157,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1129,7 +1173,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_TRAJECTORY_INFO;	// Cmd
 
         if (Enable == true)
@@ -1140,6 +1184,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1154,9 +1200,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG);
         pkbuf[1] = 16; //UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_RESET_TIMESTAMP;	// Cmd
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1171,7 +1218,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_MOTION_ENG); //0x41
         pkbuf[1] = 16;//UInt8(sizeof(Fusion_DataPacket_t))
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = MOTION_CMD_TRAJECTORY_RECORD;	// Cmd
 
         if (Enable == true)
@@ -1182,6 +1229,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1196,9 +1245,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_STORAGE);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = STORAGE_CMD_GET_NB_SESSION; // Cmd
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1212,12 +1262,13 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_STORAGE);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = STORAGE_CMD_GET_SESSION_INFO; // Cmd
 
         pkbuf[8] = (byte)(sessionId & 0xff);
         pkbuf[9] = (byte)((sessionId >> 8) & 0xff);
 
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1231,7 +1282,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_STORAGE); //0x41
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = STORAGE_CMD_ERASE; // Cmd
 
         if (Enable == true)
@@ -1242,6 +1293,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             return;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1255,7 +1308,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_STORAGE);
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = STORAGE_CMD_PLAY; // Cmd
 
         if (Enable == true)
@@ -1270,6 +1323,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         pkbuf[9] = (byte)(sessionId & 0xff);
         pkbuf[10] = (byte)((sessionId >> 8) & 0xff);
 
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1283,7 +1338,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
 
         pkbuf[0] = ((NEB_CTRL_PKTYPE_CMD << 5) | NEB_CTRL_SUBSYS_STORAGE); //0x41
         pkbuf[1] = 16;
-        pkbuf[2] = 0;
+        pkbuf[2] = (byte)0xff;
         pkbuf[3] = STORAGE_CMD_RECORD;	// Cmd
 
         if (Enable == true)
@@ -1294,6 +1349,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             pkbuf[8] = 0;
         }
+
+        pkbuf[2] = calculateCRC8Java(pkbuf,pkbuf.length);
         mCtrlChar.setValue(pkbuf);
         mBleGatt.writeCharacteristic(mCtrlChar);
     }
@@ -1349,6 +1406,81 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         getLed();
         //By default start streaming quaternions
         streamQuaternion(true);
+    }
+
+    //This function takes calculateCRC() function and expands each function in the order of operations and formats the bytes and ints properly to work in java
+    //TODO: Make this code a bit cleaner for sanity's sake
+    private byte calculateCRC8Java(byte[] pData, int len ) {
+
+        int i, e, f, crc;
+
+        crc = 0;
+        for (i = 0; i < len; i++)
+        {
+            int b = pData[i] & 0xFF;
+            e = crc ^ b;
+
+            f = e ^ (e >> 4) ^ (e >> 7); //Breaking up this line is the split test
+
+            byte byteA = (byte) e;
+
+            int int1 = byteA & 0xFF; //e ->fixed int
+            int int2 = 4; //4 ->fixed int
+            int int3 = 7; //7 ->fixed int
+
+            int temp1 = int1 >> int2; //replaces (e >> 4) -> int
+            byte result1 = (byte) temp1; //replaces (e >> 4) -> byte
+            int int4 = (byte) result1; //replaces (e >> 4) -> fixed int
+
+            int temp2 = int1 >> int3; //replaces (e >> 7) -> int
+            byte result2 = (byte) temp2; //replaces (e >> 7) -> byte
+            int int5 = (byte) result2; //replaces (e >> 7) -> fixed int
+
+            int temp3 = int1 ^ int4; //replaces e ^ (e >> 4)  -> int
+            byte result3 = (byte)temp3; //replaces e ^ (e >> 4)  -> byte
+            int int6 = result3 & 0xFF; //replaces e ^ (e >> 4)  -> fixed int
+
+            int temp4 = int6 ^ int5;  //replaces e ^ (e >> 4) ^ (e >> 7)
+            byte final_split_result = (byte)temp4;
+
+            f = final_split_result & 0xFF;
+
+            //Second line to split
+//            crc = ((f << 1) ^ (f << 4));
+            byte number1 = (byte) 1;
+            byte number4 = (byte) 4;
+
+            int intNumber1 = number1 & 0xFF;
+            int intNumber4 = number4 & 0xFF;
+
+            int intIntermediary1 = f << intNumber1;
+            int intIntermediary4 = f << intNumber4;
+
+            byte byteIntermediary1 = (byte) intIntermediary1;
+            byte byteIntermediary4 = (byte) intIntermediary4;
+
+            int intFinalEquation1 = byteIntermediary1 &0xFF;
+            int intFinalEquation4 = byteIntermediary4 &0xFF;
+
+            crc = intFinalEquation1 ^ intFinalEquation4;
+        }
+        return (byte)crc; //Doesn't matter if we add & 0xFF
+    }
+
+    //This is close to the original code copied from iOS -> it doesn't work properly
+    private byte calculateCRC(byte[] pData, int len ) {
+
+        int i;
+        byte e, f, crc;
+
+        crc = 0;
+        for (i = 0; i < len; i++)
+        {
+            e = (byte)(crc ^ pData[i]);
+            f = (byte)(e ^ (e >> 4) ^ (e >> 7));
+            crc = (byte) ((f << 1) ^ (f << 4));
+        }
+        return crc;
     }
 
 
