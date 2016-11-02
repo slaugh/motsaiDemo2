@@ -60,14 +60,13 @@ public class DynamicData extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dynamic_data);
-//        ButterKnife.inject(this);
 
-        //TODO: Test to make sure this is in fact what is slowing down the app
-        Intent intent = new Intent(this,HapticService.class);
-        this.stopService(intent);
+        if(BLEDeviceScanActivity.enableHackathon==true) {
+            Intent intent = new Intent(this, HapticService.class);
+            this.stopService(intent);
+        }
 
         NebDeviceDetailFragment.upAndRunning = true;
-
         NebDeviceDetailFragment.dynamicDataActivity = this;
 
         aprLevelsPlot = (XYPlot) findViewById(R.id.aprLevelsPlot);
@@ -116,20 +115,32 @@ public class DynamicData extends Activity {
         aprHistoryPlot.setRangeBoundaries(-180, 359, BoundaryMode.FIXED);
         aprHistoryPlot.setDomainBoundaries(0, 30, BoundaryMode.FIXED);
 //        PointLabelFormatter laberFormatter = new PointLabelFormatter();
-        LineAndPointFormatter formatter = new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, 0, null);
 
+        //Format the first line
+        LineAndPointFormatter formatter = new LineAndPointFormatter(Color.rgb(100, 100, 200), Color.BLACK, 0, null);
         Paint paint = formatter.getLinePaint();
         paint.setStrokeWidth(75);
-
+        paint.setColor(Color.RED);
         formatter.setLinePaint(paint);
+        aprHistoryPlot.addSeries(azimuthHistorySeries, formatter);
 
-        aprHistoryPlot.addSeries(azimuthHistorySeries, formatter);//TODO: Fix Added random zeros???
+        //Format the second line
+        LineAndPointFormatter formatter2 = new LineAndPointFormatter(Color.rgb(200, 100, 100), Color.BLACK, 0, null);
+        Paint paint2 = formatter2.getLinePaint();
+        paint2.setStrokeWidth(75);
+        paint2.setColor(Color.BLUE);
+        formatter2.setLinePaint(paint2);
+        aprHistoryPlot.addSeries(pitchHistorySeries, formatter2);
+
+        //Format the third line
+        LineAndPointFormatter formatter3 = new LineAndPointFormatter(Color.rgb(100, 200, 100), Color.BLACK, 0, null);
+        Paint paint3 = formatter3.getLinePaint();
+        paint3.setStrokeWidth(75);
+        paint3.setColor(Color.GREEN);
+        formatter3.setLinePaint(paint3);
+        aprHistoryPlot.addSeries(rollHistorySeries, formatter3);
 
 
-
-
-        aprHistoryPlot.addSeries(pitchHistorySeries, new LineAndPointFormatter(Color.rgb(100, 200, 100), Color.BLACK, 0, null));
-        aprHistoryPlot.addSeries(rollHistorySeries, new LineAndPointFormatter(Color.rgb(200, 100, 100), Color.BLACK, 0, null));
         aprHistoryPlot.setDomainStepValue(5);
         aprHistoryPlot.setTicksPerRangeLabel(3);
         aprHistoryPlot.setDomainLabel("Sample Index");

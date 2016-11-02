@@ -465,11 +465,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 initializeState++;
                 break;
             case 5:
-//                setMotionCmdDownSample(true);
+                streamIMU(true);
                 initializeState++;
                 break;
             case 6:
-
+                //                setMotionCmdDownSample(true);
                 initializeState++;
             default:
                 break;
@@ -500,6 +500,10 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         {
             subsys &= 0x7F;
             errFlag = true;
+        }
+
+        if (subsys == NEB_CTRL_PKTYPE_CMD){
+            Log.w("BLUETOOTH_DEBUG","CMD ACK received");
         }
 
         int datalen = pkt.length - 4;

@@ -64,6 +64,7 @@ public class Renderer {
 	ModelBatch modelBatch;
 
 	final Vector3 tmpV = new Vector3();
+	private boolean isTablet = true;
 
 	public Renderer () {
 		try {
@@ -144,8 +145,15 @@ public class Renderer {
 
 	private void setProjectionAndCamera (Ship ship) {
 		ship.transform.getTranslation(tmpV);
-		camera.position.set(tmpV.x, 1f, 1.75f); //(Height, How far behind the ship)
-		camera.direction.set(tmpV.x, 0, -0.5f).sub(camera.position).nor(); //( Something, Nod of camera)
+
+
+		if(isTablet = true) {
+			camera.position.set(tmpV.x, 6, 2); //(Height, How far behind the ship)
+			camera.direction.set(tmpV.x, 0, -4).sub(camera.position).nor(); //( Something, Nod of camera)
+		} else{ //Use phone dimentions
+			camera.position.set(tmpV.x, 1f, 1.75f); //(Height, How far behind the ship)
+			camera.direction.set(tmpV.x, 0, -0.5f).sub(camera.position).nor(); //( Something, Nod of camera)
+		}
 		camera.update();
 	}
 
