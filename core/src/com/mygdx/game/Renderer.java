@@ -96,9 +96,6 @@ public class Renderer {
 			setProjectionAndCamera(simulation.ships[shipNumber]);
 		}
 
-
-
-
 		modelBatch.begin(camera);
 		modelBatch.render(simulation.explosions);
 		for(int shipNumber = 0; shipNumber < simulation.MAX_SHIPS; shipNumber++){
@@ -147,8 +144,8 @@ public class Renderer {
 
 	private void setProjectionAndCamera (Ship ship) {
 		ship.transform.getTranslation(tmpV);
-		camera.position.set(tmpV.x, 6, 2);
-		camera.direction.set(tmpV.x, 0, -4).sub(camera.position).nor();
+		camera.position.set(tmpV.x, 1f, 1.75f); //(Height, How far behind the ship)
+		camera.direction.set(tmpV.x, 0, -0.5f).sub(camera.position).nor(); //( Something, Nod of camera)
 		camera.update();
 	}
 

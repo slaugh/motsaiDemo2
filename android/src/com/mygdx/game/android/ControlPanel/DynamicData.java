@@ -26,6 +26,7 @@ import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
 import com.mygdx.game.android.NeblinaClasses.NebDeviceDetailFragment;
 import com.mygdx.game.android.R;
+import com.mygdx.game.android.notifactions.HapticService;
 
 import java.text.FieldPosition;
 import java.text.Format;
@@ -60,6 +61,10 @@ public class DynamicData extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dynamic_data);
 //        ButterKnife.inject(this);
+
+        //TODO: Test to make sure this is in fact what is slowing down the app
+        Intent intent = new Intent(this,HapticService.class);
+        this.stopService(intent);
 
         NebDeviceDetailFragment.upAndRunning = true;
 

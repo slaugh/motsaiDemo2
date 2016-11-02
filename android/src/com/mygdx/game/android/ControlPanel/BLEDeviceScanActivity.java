@@ -115,8 +115,12 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     private BluetoothAdapter mBluetoothAdapter;
     private Handler mHandler;
 
+    //HACKATHON VARIABLES
+    public static boolean enableHackathon = false;
 
-/************************************MAIN INITIALIZATION CODE********************************/
+
+
+    /************************************MAIN INITIALIZATION CODE********************************/
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,8 +138,10 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         scanLeDevice(true);
 
         //Hackathon Background Service for acknowledging messages
-        Intent intent = new Intent(this,HapticService.class);
-        this.startService(intent);
+        if(enableHackathon==true) {
+            Intent intent = new Intent(this, HapticService.class);
+            this.startService(intent);
+        }
     }
 
 
@@ -290,7 +296,7 @@ public void onListItemClick(String deviceKey) {
     @OnClick(R.id.dataVisualizationButton)void dataVisualization() {
         Log.w("DEBUG", "Saving Time Data");
 
-        Intent intent = new Intent(this, DisplayActivity.class);
+        Intent intent = new Intent(this, DynamicData.class);
         startActivity(intent);
     }
 

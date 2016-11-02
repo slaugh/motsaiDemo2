@@ -225,8 +225,9 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
             HapticService.mNeblina = this;
         }
 
-
-        putToPresenceUrl(rssi); //Main call to
+        if(BLEDeviceScanActivity.enableHackathon == true) {
+            putToPresenceUrl(rssi); //Main call to PUT presence
+        }
     }
 
     public class JitterTest extends  TimerTask {
@@ -426,7 +427,8 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         Log.w("BLUETOOTH DEBUG", "Write Delay is: " + writeDelay);
         switch (initializeState){
             case 0:
-                setDataPort((byte)0,(byte)1);
+                streamQuaternion(true);
+//                setDataPort((byte)0,(byte)1);
                 initializeState++;
                 break;
             default:
@@ -440,18 +442,16 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
     public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status){
         switch (initializeState){
             case 0:
-                setDataPort((byte) 0, (byte) 1); //BLE port is 0, Activate is 1
-
+//                setDataPort((byte) 0, (byte) 1); //BLE port is 0, Activate is 1
+                streamQuaternion(true);
                 initializeState++;
                 break;
             case 1:
-                streamQuaternion(true);
-
+                getMotionStatus();
                 initializeState++;
                 break;
             case 2:
                 getFirmwareVersion();
-
                 initializeState++;
                 break;
             case 3:
@@ -463,11 +463,11 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 initializeState++;
                 break;
             case 5:
-                setMotionCmdDownSample(true);
+//                setMotionCmdDownSample(true);
                 initializeState++;
                 break;
             case 6:
-                getMotionStatus();
+
                 initializeState++;
             default:
                 break;

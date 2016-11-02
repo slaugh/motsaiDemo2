@@ -338,11 +338,11 @@ public class Simulation implements Disposable {
 			blocks.clear();
 			shots.clear();
 			shipShot = null;
-			ships[0].transform.getTranslation(tmpV1); //TODO: Will this affect movement???
+			ships[0].transform.getTranslation(tmpV1);
 
 			int lives = ships[0].lives;
 			populate();
-			ships[0].transform.setTranslation(tmpV1); //TODO: Will this affect movement???
+			ships[0].transform.setTranslation(tmpV1);
 			ships[0].lives = lives;
 			multiplier += 0.2f;
 			wave++;

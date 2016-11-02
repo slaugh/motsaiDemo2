@@ -43,6 +43,7 @@ public class Invaders extends Game implements ApplicationListener {
 	private FPSLogger fps;
 
 	private Controller controller;
+	private boolean audio_enabled = false;
 
 	public Invaders(InvaderInterface[] invaderInterfaceArray) {
 		this.mInvaderInterfaceArray = invaderInterfaceArray;
@@ -104,7 +105,8 @@ public class Invaders extends Game implements ApplicationListener {
 				} else if (currentScreen instanceof GameOver) {
 					// if the current screen is a game over screen we switch to the
 					// main menu screen
-					setScreen(new MainMenu(this));
+//					setScreen(new MainMenu(this));
+					setScreen(new GameLoop(this)); //Go straight to game loop for Motsai purposes
 				}
 			}
 		}
@@ -120,10 +122,15 @@ public class Invaders extends Game implements ApplicationListener {
 		}
 		Controllers.addListener(controllerListener);
 
-		setScreen(new MainMenu(this));
-		music = Gdx.audio.newMusic(Gdx.files.getFileHandle("data/8.12.mp3", FileType.Internal));
-		music.setLooping(true);
-		music.play();
+//		setScreen(new MainMenu(this));
+		setScreen(new GameLoop(this));
+
+		if(audio_enabled == true) {
+			music = Gdx.audio.newMusic(Gdx.files.getFileHandle("data/8.12.mp3", FileType.Internal));
+			music.setLooping(true);
+			music.play();
+		}
+
 		Gdx.input.setInputProcessor(new InputAdapter() {
 			@Override
 			public boolean keyUp (int keycode) {
