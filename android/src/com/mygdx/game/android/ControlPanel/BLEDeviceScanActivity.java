@@ -77,6 +77,8 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
     @InjectView(R.id.refreshButton) Button refreshButton;
     @InjectView(R.id.dataVisualizationButton) Button toggleButton;
 
+    private boolean mTwoPane;
+
     //List Variables
     private List<String> mDeviceNameList;
     private CustomListAdapter mLeDeviceListAdapter;

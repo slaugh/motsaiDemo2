@@ -59,6 +59,7 @@ public class NebListAdapter extends ArrayAdapter<NebCmdItem> {
             Button button = (Button) view.findViewById(R.id.button);
             button.setVisibility(View.INVISIBLE);
             button.setTag(-1);
+            button.setText(item.mText);
 //            button.isActivated();
 //            button.setActivated();
 
@@ -109,7 +110,6 @@ public class NebListAdapter extends ArrayAdapter<NebCmdItem> {
                 case 3: // Text field
                     textView.setVisibility(View.VISIBLE);
                     textView.setTag(position);
-
                     break;
             }
         }

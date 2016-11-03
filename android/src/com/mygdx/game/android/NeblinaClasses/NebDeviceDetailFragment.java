@@ -65,15 +65,17 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static final NebCmdItem[] cmdList = new NebCmdItem[] {
             new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "BLE Data Port", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_DEBUG, DEBUG_CMD_SET_DATAPORT, "UART Data Port", 1, ""),
-            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_SET_FUSION_TYPE, "Fusion 9 axis", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION, "Quaternion Stream", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_IMU_DATA, "IMU Stream", 1, ""),
+            new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD, "Start Record", 2, "START"),
+            new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD, "Stop Record", 2, "STOP"),
+            new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_SET_FUSION_TYPE, "Fusion 9 axis", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MOTION_STATE, "Notify MOTION STATE", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_MAG_DATA, "Mag Stream", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_MOTION_ENG, Neblina.MOTION_CMD_LOCK_HEADING_REF, "Lock Heading Ref.", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, Neblina.STORAGE_CMD_ERASE, "Flash Erase All", 1, ""),
             new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD, "Flash Record", 1, ""),
-            new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY, "Flash Playback", 1, ""),
+//            new NebCmdItem(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY, "Flash Playback", 1, ""),
             new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_LED, Neblina.LED_CMD_SET_VALUE, "Set LED0 level", 3, ""),
             new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_LED, Neblina.LED_CMD_SET_VALUE, "Set LED1 level", 3, ""),
             new NebCmdItem(Neblina.NEB_CTRL_SUBSYS_LED, Neblina.LED_CMD_SET_VALUE, "Set LED2", 1, ""),
@@ -249,6 +251,15 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                         break;
                 }
                 break;
+            case NEB_CTRL_SUBSYS_STORAGE:
+                int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
+                if (idx == i ){
+                    mNebDev.sessionRecord(true);
+
+                }else{
+                    mNebDev.sessionRecord(false);
+                }
+
         }
     }
 
