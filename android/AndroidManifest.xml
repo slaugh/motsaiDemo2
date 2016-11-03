@@ -49,11 +49,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ControlPanel.AndroidLauncher"
-            android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-            android:label="@string/app_name"
-            android:screenOrientation="landscape" />
         <activity android:name=".ControlPanel.DisplayActivity" />
         <activity
             android:name=".ControlPanel.RoundTripGraphs"

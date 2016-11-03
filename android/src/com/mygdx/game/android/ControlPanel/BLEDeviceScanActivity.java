@@ -75,7 +75,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
     //Butterknife get views
     @InjectView(R.id.refreshButton) Button refreshButton;
-    @InjectView(R.id.dataVisualizationButton) Button toggleButton;
+    @InjectView(R.id.cloudStreamToggle) Button toggleButton;
 
     private boolean mTwoPane;
 
@@ -119,7 +119,7 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
 
     //HACKATHON VARIABLES
     public static boolean enableHackathon = false;
-
+    public static boolean isStreaming = false;
 
 
     /************************************MAIN INITIALIZATION CODE********************************/
@@ -143,6 +143,14 @@ public class BLEDeviceScanActivity extends FragmentActivity implements AndroidFr
         if(enableHackathon==true) {
             Intent intent = new Intent(this, HapticService.class);
             this.startService(intent);
+        }
+
+        if (findViewById(R.id.nebdevice_detail_container) != null) {
+            // The detail container view will be present only in the
+            // large-screen layouts (res/values-w900dp).
+            // If this view is present, then the
+            // activity should be in two-pane mode.
+            mTwoPane = true;
         }
     }
 
@@ -294,10 +302,21 @@ public void onListItemClick(String deviceKey) {
     }
 
 
-    //This starts the data visualization tools
-    @OnClick(R.id.dataVisualizationButton)void dataVisualization() {
-        Log.w("DEBUG", "Saving Time Data");
 
+    @OnClick(R.id.cloudStreamToggle)void streamToCloud(View view) {
+
+        if(view.isActivated()){
+            isStreaming = false;
+            view.setActivated(false);
+        }else {
+            isStreaming = true;
+            view.setActivated(true);
+        }
+    }
+
+    //This starts the data visualization tools
+    @OnClick(R.id.dataVisualisation) void dataVisualization(){
+        Log.w("DEBUG", "Starting Visualization");
         Intent intent = new Intent(this, DynamicData.class);
         startActivity(intent);
     }
@@ -365,6 +384,11 @@ public void onListItemClick(String deviceKey) {
         return isAvailable;
     }
 
+    @Override
+    public void exit() {
+
+    }
+
     public static class GameFragment extends AndroidFragmentApplication
     {
         @Override
@@ -380,71 +404,5 @@ public void onListItemClick(String deviceKey) {
         this.stopService(intent);
     }
 
-    @Override
-    public void exit() {}
-
-    public class getAWSID extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected Void doInBackground(String... params) {
-            CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
-                    getApplicationContext(),
-                    "us-east-1:6e702b0c-80ab-4461-9ec3-239f1d163cd5", // Identity Pool ID
-                    Regions.US_EAST_1 // Region
-            );
-
-            identityID = credentialsProvider.getIdentityId();
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.w("LogTag", "my ID is " + identityID);
-                }
-            });
-
-            // Initialize the Cognito Sync client
-            CognitoSyncManager syncClient = new CognitoSyncManager(
-                    getApplicationContext(),
-                    Regions.US_EAST_1, // Region
-                    credentialsProvider);
-
-// Create a record in a dataset and synchronize with the server
-            com.amazonaws.mobileconnectors.cognito.Dataset dataset = syncClient.openOrCreateDataset("myDataset");
-            dataset.put("myKey", "myValue");
-            dataset.synchronize(new DefaultSyncCallback() {
-                @Override
-                public void onSuccess(com.amazonaws.mobileconnectors.cognito.Dataset dataset, List newRecords) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.w("LogTag", "Creating a Record was successful!" + identityID);
-                        }
-                    });
-                }
-            });
-
-            AmazonDynamoDBClient ddbClient = new AmazonDynamoDBClient(credentialsProvider);
-            DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
-
-            Quaternions quaternions = new Quaternions();
-//            quaternions.setQ1(NebDeviceDetailFragment.latest_Q0);
-//            quaternions.setQ2(NebDeviceDetailFragment.latest_Q1);
-//            quaternions.setQ3(NebDeviceDetailFragment.latest_Q2);
-//            quaternions.setQ4(NebDeviceDetailFragment.latest_Q3);
-            quaternions.setTimestamp(Long.toString(NebDeviceDetailFragment.timestamp_N));
-
-            mapper.save(quaternions);
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.w("LogTag", "so basically the problem is here");
-                }
-            });
-            return null;
-        }
-    }
-
-
-    }
+}
 

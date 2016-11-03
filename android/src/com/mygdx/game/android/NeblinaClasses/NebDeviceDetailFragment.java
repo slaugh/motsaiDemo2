@@ -6,6 +6,7 @@ package com.mygdx.game.android.NeblinaClasses;
  */
 
 import android.app.Fragment;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,16 +18,23 @@ import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobileconnectors.cognito.CognitoSyncManager;
+import com.amazonaws.mobileconnectors.cognito.DefaultSyncCallback;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBMapper;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.DynamoDBScanExpression;
+import com.amazonaws.mobileconnectors.dynamodbv2.dynamodbmapper.PaginatedScanList;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.mygdx.game.android.Adapters.NebCmdItem;
 import com.mygdx.game.android.Adapters.NebListAdapter;
+import com.mygdx.game.android.ControlPanel.BLEDeviceScanActivity;
 import com.mygdx.game.android.ControlPanel.DynamicData;
 import com.mygdx.game.android.R;
 import com.mygdx.game.simulation.Simulation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Queue;
-import java.util.Stack;
+import java.util.List;
 
 import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_DUMP_DATA;
 import static com.mygdx.game.android.NeblinaClasses.Neblina.DEBUG_CMD_GET_DATAPORT;
@@ -106,9 +114,16 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     public static String Q3_string = "";
     public static long timestamp_N =0;
 
+    private Quaternions quaternionAWS = null;
+
     //Dynamic Graph Activity
     public static DynamicData dynamicDataActivity;
     public static boolean upAndRunning = false;
+
+    //AWS Variables
+    public String identityID = "";
+    private boolean runDeleteOnce = true;
+
 
     //Mandatory empty constructor for the fragment manager to instantiate the fragment (e.g. upon screen orientation changes)
     public NebDeviceDetailFragment() {
@@ -325,6 +340,13 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                         }
                     });
 
+                    if(BLEDeviceScanActivity.isStreaming && runDeleteOnce) {
+                        runDeleteOnce = false;
+//                        quaternionAWS = new Quaternions(System.currentTimeMillis(), latest_Q0s[deviceNum], latest_Q1s[deviceNum], latest_Q2s[deviceNum], latest_Q3s[deviceNum]);
+                        quaternionAWS = new Quaternions("Alpha", latest_Q0s[deviceNum], latest_Q1s[deviceNum], latest_Q2s[deviceNum], latest_Q3s[deviceNum]);
+                        new runAWS().execute();
+                    }
+
                 break;
         }
                 break;
@@ -350,7 +372,6 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                 short valAZ = (short)(((data[13-4]&0xff)<<8)|(data[12-4]&0xff));
                 float normalizedAZ = (float) valAZ / 32768; //normalize by dividing by 2^15
                 if (normalizedAZ > 1.0) normalizedAZ = normalizedAZ-2;
-
 
                 double magnitude = Math.sqrt(((double) valAX)*((double) valAX) + ((double) valAY)*((double) valAY) + ((double) valAZ)*((double) valAZ));
 
@@ -445,7 +466,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                         }
                     }
                     break;
-                    default: {
+                    case 3: {
                         int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
                         final Switch v = (Switch) mCmdListView.findViewWithTag(i);
                         if (v != null) {
@@ -474,6 +495,11 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                         }
                     }
                     break;
+                    default: {
+                        Log.w("BLUETOOTH_DEBUG", "Unhandled Button Case");
+                        break;
+                    }
+
                 }
                 int i = getCmdIdx(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION);
                 final Switch v = (Switch) mCmdListView.findViewWithTag(i);
@@ -576,6 +602,57 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
     }
     public void didReceiveLedData(int type, byte[] data, int dataLen, boolean errFlag) {
         //Implement what you want to do with the data here
+    }
+
+    /********************************** AWS Networking Functions *********************************/
+
+    public class runAWS extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... params) {
+            CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                    getContext(),
+                    "us-east-1:6e702b0c-80ab-4461-9ec3-239f1d163cd5", // Identity Pool ID
+                    Regions.US_EAST_1 // Region
+            );
+
+
+            identityID = credentialsProvider.getIdentityId();
+            Log.w("AWS_DEBUG", "Doing Stuff in background. ID = " + identityID);
+
+            // Initialize the Cognito Sync client
+            CognitoSyncManager syncClient = new CognitoSyncManager(
+                    getContext(),
+                    Regions.US_EAST_1, // Region
+                    credentialsProvider);
+
+            // Create a record in a dataset and synchronize with the server
+//            com.amazonaws.mobileconnectors.cognito.Dataset dataset = syncClient.openOrCreateDataset("myDataset");
+//            dataset.put("myKey", "myValue");
+//            dataset.synchronize(new DefaultSyncCallback() {
+//                @Override
+//                public void onSuccess(com.amazonaws.mobileconnectors.cognito.Dataset dataset, List newRecords) {
+//                            Log.w("AWS_DEBUG", "Creating a Record was successful!" + identityID);
+//                }
+//            });
+
+            AmazonDynamoDBClient ddbClient = new AmazonDynamoDBClient(credentialsProvider);
+            DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
+
+            DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+
+            PaginatedScanList<Quaternions> result = mapper.scan(Quaternions.class, scanExpression);
+
+            for (Quaternions data : result) {
+                mapper.delete(data);
+            }
+
+//            mapper.save(quaternionAWS); //seems to only create one item at a time...
+
+            return null;
+        }
+
+
     }
 
     /*************************************** Helper function *************************************/
