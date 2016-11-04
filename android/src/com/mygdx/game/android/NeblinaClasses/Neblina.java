@@ -430,6 +430,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         switch (initializeState){
             case 0:
                 streamQuaternion(true);
+
 //                setDataPort((byte)0,(byte)1);
                 initializeState++;
                 break;
@@ -445,7 +446,6 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
         switch (initializeState){
             case 0:
 //                setDataPort((byte) 0, (byte) 1); //BLE port is 0, Activate is 1
-                streamQuaternion(true);
                 initializeState++;
                 break;
             case 1:
@@ -453,7 +453,7 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 initializeState++;
                 break;
             case 2:
-                getFirmwareVersion();
+                getLed();
                 initializeState++;
                 break;
             case 3:
@@ -461,16 +461,13 @@ public class Neblina extends BluetoothGattCallback implements Parcelable {
                 initializeState++;
                 break;
             case 4:
-                getLed();
+                getFirmwareVersion(); //TODO: Troubleshoot why this no longer return a value -> V2 issue???
                 initializeState++;
                 break;
             case 5:
                 streamIMU(true);
                 initializeState++;
                 break;
-            case 6:
-                //                setMotionCmdDownSample(true);
-                initializeState++;
             default:
                 break;
         }

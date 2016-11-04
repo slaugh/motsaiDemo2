@@ -340,10 +340,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                         }
                     });
 
-                    if(BLEDeviceScanActivity.isStreaming && runDeleteOnce) {
-                        runDeleteOnce = false;
-//                        quaternionAWS = new Quaternions(System.currentTimeMillis(), latest_Q0s[deviceNum], latest_Q1s[deviceNum], latest_Q2s[deviceNum], latest_Q3s[deviceNum]);
-                        quaternionAWS = new Quaternions("Alpha", latest_Q0s[deviceNum], latest_Q1s[deviceNum], latest_Q2s[deviceNum], latest_Q3s[deviceNum]);
+                    if(BLEDeviceScanActivity.isStreaming) {
+                        quaternionAWS = new Quaternions(String.valueOf(System.currentTimeMillis()), latest_Q0s[deviceNum], latest_Q1s[deviceNum], latest_Q2s[deviceNum], latest_Q3s[deviceNum]);
                         new runAWS().execute();
                     }
 
@@ -400,7 +398,7 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
 
     public void didReceiveDebugData(int type, final byte[] data, int dataLen, boolean errFlag) {
 
-        Log.w("BLUETOOTH DEBUG", "RECEIVING DEBUG INFORMATION!");
+        Log.w("BLUETOOTH DEBUG", "RECEIVING DEBUG INFORMATION! type: " + type);
         NebListAdapter adapter = (NebListAdapter) mCmdListView.getAdapter();
 
         switch (type) {
@@ -434,8 +432,8 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                                 }
                             });
                         }
-                    }
                     break;
+                    }
                     case 2:    // Recording
                     {
                         int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_PLAY);
@@ -464,9 +462,10 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                                 }
                             });
                         }
-                    }
                     break;
-                    case 3: {
+                    }
+
+                    case 3: { //Storage
                         int i = getCmdIdx(NEB_CTRL_SUBSYS_STORAGE, STORAGE_CMD_RECORD);
                         final Switch v = (Switch) mCmdListView.findViewWithTag(i);
                         if (v != null) {
@@ -493,14 +492,14 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                                 }
                             });
                         }
-                    }
-                    break;
-                    default: {
-                        Log.w("BLUETOOTH_DEBUG", "Unhandled Button Case");
                         break;
                     }
-
+                    default: {
+                        Log.w("BLUETOOTH_DEBUG", "Unhandled Button Case" + data[8]);
+                        break;
+                    }
                 }
+
                 int i = getCmdIdx(NEB_CTRL_SUBSYS_MOTION_ENG, MOTION_CMD_QUATERNION);
                 final Switch v = (Switch) mCmdListView.findViewWithTag(i);
 
@@ -528,8 +527,9 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
                     });
 
                 }
+                break;
             }
-            break;
+//TODO: FIX THESE CASES
             case DEBUG_CMD_GET_FW_VERSION:
             {
                 final String s = String.format("API:%d, FEN:%d.%d.%d, BLE:%d.%d.%d", data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
@@ -639,20 +639,20 @@ public class NebDeviceDetailFragment extends Fragment implements NeblinaDelegate
             AmazonDynamoDBClient ddbClient = new AmazonDynamoDBClient(credentialsProvider);
             DynamoDBMapper mapper = new DynamoDBMapper(ddbClient);
 
-            DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
-
-            PaginatedScanList<Quaternions> result = mapper.scan(Quaternions.class, scanExpression);
-
-            for (Quaternions data : result) {
-                mapper.delete(data);
-            }
-
-//            mapper.save(quaternionAWS); //seems to only create one item at a time...
+//        clearDatabase(mapper);
+            mapper.save(quaternionAWS); //seems to only create one item at a time...
 
             return null;
         }
+    }
 
-
+    //BE CAREFUL!!! This function will delete everything in the database... USE AT YOUR OWN RISK!!!!
+    private void clearDatabase(DynamoDBMapper mapper) {
+        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+        PaginatedScanList<Quaternions> result = mapper.scan(Quaternions.class, scanExpression);
+        for (Quaternions data : result) {
+            mapper.delete(data);
+        }
     }
 
     /*************************************** Helper function *************************************/

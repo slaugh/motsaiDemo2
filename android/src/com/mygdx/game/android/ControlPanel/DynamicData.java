@@ -66,7 +66,6 @@ public class DynamicData extends Activity {
             this.stopService(intent);
         }
 
-        NebDeviceDetailFragment.upAndRunning = true;
         NebDeviceDetailFragment.dynamicDataActivity = this;
 
         aprLevelsPlot = (XYPlot) findViewById(R.id.aprLevelsPlot);
@@ -200,14 +199,41 @@ public class DynamicData extends Activity {
 //        }
 
 //        sensorMgr.registerListener(this, orSensor, SensorManager.SENSOR_DELAY_UI);
+
+        //Call this at the end once everything is initialized
+        NebDeviceDetailFragment.upAndRunning = true;
     }
 
 
     private void cleanup() {
         // aunregister with the orientation sensor before exiting:
 //        sensorMgr.unregisterListener(this);
+        NebDeviceDetailFragment.upAndRunning = false;
         finish();
     }
+
+
+    protected void onPause(){
+        super.onPause();
+        NebDeviceDetailFragment.upAndRunning = false;
+    }
+
+    protected void onResume(){
+        super.onResume();
+        NebDeviceDetailFragment.upAndRunning = true;
+    }
+
+    protected void onStart(){
+        super.onStart();
+        NebDeviceDetailFragment.upAndRunning = true;
+    }
+
+    protected void onStop(){
+        super.onStop();
+        NebDeviceDetailFragment.upAndRunning = false;
+    }
+
+
 
 
 
